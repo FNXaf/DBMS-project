@@ -3,27 +3,27 @@
 
 /* ===== CSS Variables ===== */
 :root {
-    --bg: #fef9f3;
+    --bg: #f0f5fa;
     --card-bg: #ffffff;
-    --primary: #e8a87c;
-    --primary-dark: #d4845a;
-    --primary-light: #f5d5c0;
-    --secondary: #b8a9c9;
-    --secondary-dark: #9685ad;
-    --accent: #85cdca;
-    --accent-dark: #5fb4b0;
-    --rose: #e8a0bf;
-    --rose-light: #f8d0e3;
-    --mint: #c5f0e0;
-    --text: #41354d;
-    --text-light: #7c7289;
-    --text-muted: #a89db5;
-    --border: #f0e6d8;
+    --primary: #5b8ec7;
+    --primary-dark: #3f5fa8;
+    --primary-light: #a8c8e1;
+    --secondary: #7a9ab8;
+    --secondary-dark: #5b7a99;
+    --accent: #5db8a7;
+    --accent-dark: #3d9a8a;
+    --rose: #6b9ab8;
+    --rose-light: #d0e5f2;
+    --mint: #7ec9c1;
+    --text: #2c3e50;
+    --text-light: #5a7391;
+    --text-muted: #8292a8;
+    --border: #d4e1ed;
     --danger: #e06469;
     --success: #6bcb8b;
     --warning: #f0c75e;
-    --shadow: 0 2px 12px rgba(65, 53, 77, 0.08);
-    --shadow-hover: 0 8px 24px rgba(65, 53, 77, 0.15);
+    --shadow: 0 2px 12px rgba(44, 62, 80, 0.08);
+    --shadow-hover: 0 8px 24px rgba(44, 62, 80, 0.15);
     --radius: 16px;
     --radius-sm: 10px;
     --radius-xs: 6px;
