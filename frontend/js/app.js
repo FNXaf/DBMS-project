@@ -1,12 +1,10 @@
-// ===== Meowtopia — Common App Logic =====
-// Handles navbar rendering, image fallback, utility functions
+﻿// ===== Meowtopia — Common App Logic =====
 
-// ===== Determine base path (pages are one level deep in frontend/) =====
-// Check if we're in a subdirectory by seeing if 'pages' is in the pathname
+// ===== Base path detection =====
 const isSubPage = window.location.pathname.includes('/pages/') || window.location.pathname.includes('\\pages\\');
 const BASE = isSubPage ? '../' : './';
 
-// ===== Render Navbar =====
+// ===== Navbar =====
 function renderNavbar(activePage) {
     const user = getCurrentUser();
     const nav = document.getElementById('navbar');
@@ -14,14 +12,19 @@ function renderNavbar(activePage) {
 
     let authLinks = '';
     if (user) {
-        const dashboardLink = user.role === 'admin'
-            ? `<a href="${BASE}pages/admin.html" class="${activePage === 'admin' ? 'active' : ''}">🛠️ Admin</a>`
-            : (isOwner(user.userid)
-                ? `<a href="${BASE}pages/dashboard.html" class="${activePage === 'dashboard' ? 'active' : ''}">🏡 My Cats</a>`
-                : '');
-
+        let extraLinks = '';
+        if (user.role === 'admin') {
+            extraLinks = `<a href="${BASE}pages/admin.html" class="${activePage === 'admin' ? 'active' : ''}">🛠️ Admin</a>`;
+        } else {
+            if (isOwner(user.userid)) {
+                extraLinks = `
+                    <a href="${BASE}pages/dashboard.html" class="${activePage === 'dashboard' ? 'active' : ''}">🏡 My Cats</a>
+                    <a href="${BASE}pages/store.html" class="${activePage === 'store' ? 'active' : ''}">🛒 Food Store</a>
+                `;
+            }
+        }
         authLinks = `
-            ${dashboardLink}
+            ${extraLinks}
             <div class="navbar-user">
                 <span class="user-greeting">Hi, ${user.full_name.split(' ')[0]}! 🐾</span>
                 <button class="btn-logout" onclick="handleLogout()">Logout</button>
@@ -36,9 +39,7 @@ function renderNavbar(activePage) {
 
     nav.innerHTML = `
         <div class="container">
-            <a href="${BASE}index.html" class="navbar-brand">
-                <span>🐾</span> Meowtopia
-            </a>
+            <a href="${BASE}index.html" class="navbar-brand"><span>🐾</span> Meowtopia</a>
             <div class="navbar-links">
                 <a href="${BASE}index.html" class="${activePage === 'home' ? 'active' : ''}">Home</a>
                 <a href="${BASE}pages/cats.html" class="${activePage === 'cats' ? 'active' : ''}">Browse Cats</a>
@@ -48,7 +49,7 @@ function renderNavbar(activePage) {
     `;
 }
 
-// ===== Render Footer =====
+// ===== Footer =====
 function renderFooter() {
     const footer = document.getElementById('footer');
     if (!footer) return;
@@ -59,30 +60,29 @@ function renderFooter() {
     `;
 }
 
-// ===== Logout Handler =====
+// ===== Logout =====
 function handleLogout() {
     logoutUser();
     window.location.href = BASE + 'index.html';
 }
 
 // ===== Cat Image Helper =====
-function getCatImageHTML(cat, size = 'card') {
-    const sizeClass = size === 'detail' ? 'style="font-size: 100px"' : '';
+function getCatImageHTML(cat) {
     return `
-        <img src="${cat.photo_url}" 
-             alt="${cat.breed}" 
+        <img src="${cat.photo_url}"
+             alt="${cat.shelter_name || cat.breed}"
              onerror="this.parentElement.innerHTML='<div class=\\'cat-img-placeholder\\' style=\\'background: ${cat.gradient}\\'><span>🐱</span><span class=\\'breed-label\\'>${cat.breed}</span></div>'"
              style="width: 100%; height: 100%; object-fit: cover;">
     `;
 }
 
-// ===== Generate Cat Card HTML =====
+// ===== Cat Card (redesigned — shelter_name as title, clean attribute layout) =====
 function createCatCard(cat, linkBase) {
     const badge = cat.is_available
         ? '<span class="cat-card-badge">Available</span>'
         : '<span class="cat-card-badge unavailable">Adopted</span>';
 
-    const displayName = cat.name ? cat.name : 'Unnamed Kitty';
+    const age = formatAge(cat.dob);
 
     return `
         <div class="cat-card" onclick="window.location.href='${linkBase}pages/cat-detail.html?id=${cat.catid}'">
@@ -91,16 +91,14 @@ function createCatCard(cat, linkBase) {
                 ${badge}
             </div>
             <div class="cat-card-body">
+                <div class="cat-card-name">${cat.shelter_name}</div>
                 <div class="cat-card-breed">${cat.breed}</div>
-                <div class="cat-card-name">${displayName}</div>
-                <div class="cat-card-details">
-                    <span class="cat-tag">${cat.age}</span>
-                    <span class="cat-tag">${cat.gender}</span>
-                    <span class="cat-tag">${cat.fur_color}</span>
-                    <span class="cat-tag cattitude">${cat.cattitude}</span>
+                <div class="cat-card-attrs">
+                    <div class="cat-attr"><span class="attr-icon">⏳</span> ${age}</div>
+                    <div class="cat-attr"><span class="attr-icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</div>
+                    <div class="cat-attr"><span class="attr-icon">😸</span> ${cat.cattitude}</div>
                 </div>
                 <div class="cat-card-footer">
-                    <span class="text-muted" style="font-size: 0.8rem;">${cat.health_status}</span>
                     <span class="btn btn-primary btn-sm">Meet Me →</span>
                 </div>
             </div>
@@ -108,10 +106,9 @@ function createCatCard(cat, linkBase) {
     `;
 }
 
-// ===== URL Params Helper =====
+// ===== URL Params =====
 function getParam(name) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(name);
+    return new URLSearchParams(window.location.search).get(name);
 }
 
 // ===== Format Date =====
@@ -120,14 +117,8 @@ function formatDate(dateStr) {
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-// ===== Reset All Data (useful for demo) =====
-function resetAllData() {
-    localStorage.clear();
-    initializeData();
-    window.location.reload();
-}
-
-// ===== Init common elements on every page =====
+// ===== Init footer on every page =====
 document.addEventListener('DOMContentLoaded', () => {
     renderFooter();
 });
+

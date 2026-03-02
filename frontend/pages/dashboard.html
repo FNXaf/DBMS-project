@@ -1,34 +1,30 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Cats — Meowtopia 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
 <body>
     <nav class="navbar" id="navbar"></nav>
 
-    <main>
+    <main class="dashboard-container">
         <div class="dashboard-header" id="dashboard-header"></div>
-
-        <section class="section">
-            <div class="container">
-                <div id="dashboard-content"></div>
-            </div>
-        </section>
+        <div id="dashboard-content"></div>
     </main>
 
     <!-- Cat Detail Modal -->
-    <div class="modal-overlay" id="cat-modal">
-        <div class="modal" style="max-width: 600px; text-align: left;">
+    <div class="modal-backdrop" id="cat-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeCatModal()">✕</button>
             <div id="cat-modal-content"></div>
-            <button class="btn btn-outline btn-block mt-3" onclick="closeCatModal()">Close</button>
         </div>
     </div>
 
-    <footer class="footer" id="footer"></footer>
+    <footer id="footer"></footer>
 
     <script src="../js/data.js"></script>
     <script src="../js/app.js"></script>
@@ -40,178 +36,133 @@
         const content = document.getElementById('dashboard-content');
 
         if (!user) {
-            header.innerHTML = '<h1>🔐 Login Required</h1><p>Please log in to access your dashboard</p>';
-            content.innerHTML = `
-                <div class="empty-state">
-                    <a href="login.html" class="btn btn-primary">Login Now</a>
-                </div>
-            `;
+            header.innerHTML = '<h1>🔐 Login Required</h1><p style="color:var(--text-light)">Please log in to access your dashboard</p>';
+            content.innerHTML = `<div class="text-center mt-3"><a href="login.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px">Login Now</a></div>`;
         } else if (user.role === 'admin') {
-            header.innerHTML = '<h1>Hey Admin! 🛠️</h1><p>Head to the admin panel to manage the platform</p>';
-            content.innerHTML = `
-                <div class="empty-state">
-                    <a href="admin.html" class="btn btn-primary">Go to Admin Panel</a>
-                </div>
-            `;
+            header.innerHTML = '<h1>Hey Admin! 🛠️</h1><p style="color:var(--text-light)">Head to the admin panel to manage the platform</p>';
+            content.innerHTML = `<div class="text-center mt-3"><a href="admin.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px">Go to Admin Panel</a></div>`;
         } else {
             const userAdoptions = getUserAdoptions(user.userid);
-            
-            if (userAdoptions.length === 0) {
-                header.innerHTML = `<h1>Welcome, ${user.full_name}! 🐱</h1><p>Your cat family starts here</p>`;
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-emoji">🐾</div>
-                        <h3>You haven't adopted any cats yet!</h3>
-                        <p>Browse our adorable cats and find your purrfect match.</p>
-                        <a href="cats.html" class="btn btn-primary mt-2">Browse Cats 🐱</a>
-                    </div>
-                `;
-            } else {
-                header.innerHTML = `
-                    <h1>Welcome back, ${user.full_name}! 🐱</h1>
-                    <p>Your babies miss you — here's your cat family</p>
-                `;
 
-                // My Cats Section
-                let catsHTML = '<div class="dashboard-section"><h2>🐱 My Cats</h2><div class="cat-grid">';
-                
+            if (userAdoptions.length === 0) {
+                header.innerHTML = `<h1>Welcome, ${user.full_name}! 🐱</h1><p style="color:var(--text-light)">Your cat family starts here</p>`;
+                content.innerHTML = `
+                    <div class="text-center" style="padding:3rem 0">
+                        <div style="font-size:3rem">🐾</div>
+                        <h3>You haven't adopted any cats yet!</h3>
+                        <p style="color:var(--text-light)">Browse our adorable cats and find your purrfect match.</p>
+                        <a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Browse Cats 🐱</a>
+                    </div>`;
+            } else {
+                header.innerHTML = `<h1>Welcome back, ${user.full_name}! 🐱</h1><p style="color:var(--text-light)">Your babies miss you — here's your cat family</p>`;
+
+                // Stats
+                let statsHTML = `<div class="dashboard-stats">
+                    <div class="stat-card"><div class="stat-value">${userAdoptions.length}</div><div class="stat-label">My Cats</div></div>
+                    <div class="stat-card"><div class="stat-value">${userAdoptions.filter(a => a.status === 'Approved').length}</div><div class="stat-label">Approved</div></div>
+                    <div class="stat-card"><div class="stat-value">${userAdoptions.filter(a => a.status === 'Pending').length}</div><div class="stat-label">Pending</div></div>
+                </div>`;
+
+                // Cat cards
+                let catsHTML = '<div class="dashboard-section"><h2>🐱 My Cats</h2>';
                 userAdoptions.forEach(adoption => {
                     const cat = getCatById(adoption.catid);
                     if (!cat) return;
-                    const foodPrefs = getCatFoodPrefs(cat.catid);
-
+                    const age = formatAge(cat.dob);
                     catsHTML += `
-                        <div class="owner-cat-card" onclick="openCatModal(${cat.catid}, ${adoption.adoptionid})">
-                            <div class="cat-card-image" style="background: ${cat.gradient};">
-                                ${getCatImageHTML(cat)}
-                                <span class="cat-card-badge" style="background: var(--rose);">${adoption.status}</span>
+                        <div class="adoption-card" onclick="openCatModal(${cat.catid},${adoption.adoptionid})">
+                            <div class="adoption-card-img">${getCatImageHTML(cat)}</div>
+                            <div class="adoption-card-body">
+                                <h4>${adoption.cat_name_given}</h4>
+                                <p>${cat.breed} · ${age} · ${cat.cattitude}</p>
                             </div>
-                            <div class="owner-cat-info">
-                                <div class="owner-cat-name">${adoption.cat_name_given}</div>
-                                <div class="owner-cat-breed">${cat.breed} · ${cat.cattitude}</div>
-                                <div class="food-suggestions">
-                                    ${foodPrefs.map(f => `<span class="food-chip">${f.name}</span>`).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                            <span class="status-badge ${adoption.status.toLowerCase()}">${adoption.status}</span>
+                        </div>`;
                 });
+                catsHTML += '</div>';
 
-                catsHTML += '</div></div>';
-
-                // Notices Section (static/mock for now)
+                // Notices — birthday from DOB
                 const firstCat = getCatById(userAdoptions[0].catid);
                 const firstName = userAdoptions[0].cat_name_given;
-
-                let noticesHTML = `
-                    <div class="dashboard-section">
-                        <h2>📋 Notices & Reminders</h2>
-                        <div class="notice-grid">
-                            <div class="notice-card vet">
-                                <div class="notice-icon">🩺</div>
-                                <div class="notice-text">
-                                    Vet visit reminder for ${firstName}
-                                    <span>Scheduled for next month — annual checkup</span>
-                                </div>
-                            </div>
-                            <div class="notice-card birthday">
-                                <div class="notice-icon">🎂</div>
-                                <div class="notice-text">
-                                    ${firstName}'s adoption anniversary is coming!
-                                    <span>Celebrate with some treats and extra cuddles</span>
-                                </div>
-                            </div>
-                            <div class="notice-card tip">
-                                <div class="notice-icon">💡</div>
-                                <div class="notice-text">
-                                    Cat care tip of the day
-                                    <span>Cats need 12-16 hours of sleep per day — let them nap!</span>
-                                </div>
-                            </div>
-                            <div class="notice-card vet">
-                                <div class="notice-icon">💉</div>
-                                <div class="notice-text">
-                                    Vaccination reminder
-                                    <span>Keep your cat's vaccinations up to date for a healthy life!</span>
-                                </div>
-                            </div>
+                let birthdayNotice = '';
+                if (firstCat && firstCat.dob) {
+                    const bday = new Date(firstCat.dob);
+                    const now = new Date();
+                    const nextBday = new Date(now.getFullYear(), bday.getMonth(), bday.getDate());
+                    if (nextBday < now) nextBday.setFullYear(nextBday.getFullYear() + 1);
+                    const daysUntil = Math.ceil((nextBday - now) / (1000*60*60*24));
+                    birthdayNotice = `<div class="adoption-card" style="cursor:default">
+                        <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">🎂</div>
+                        <div class="adoption-card-body">
+                            <h4>${firstName}'s Birthday</h4>
+                            <p>${daysUntil === 0 ? 'Happy Birthday today! 🎉' : daysUntil + ' days away — ' + bday.toLocaleDateString('en-US', {month:'long',day:'numeric'})}</p>
                         </div>
-                    </div>
-                `;
+                    </div>`;
+                }
 
-                content.innerHTML = catsHTML + noticesHTML;
+                let noticesHTML = `<div class="dashboard-section"><h2>📋 Notices & Reminders</h2>
+                    ${birthdayNotice}
+                    <div class="adoption-card" style="cursor:default">
+                        <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">🩺</div>
+                        <div class="adoption-card-body"><h4>Vet Visit Reminder</h4><p>Scheduled for next month — annual checkup for ${firstName}</p></div>
+                    </div>
+                    <div class="adoption-card" style="cursor:default">
+                        <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">💡</div>
+                        <div class="adoption-card-body"><h4>Cat Care Tip</h4><p>Cats need 12–16 hours of sleep per day — let them nap!</p></div>
+                    </div>
+                </div>`;
+
+                content.innerHTML = statsHTML + catsHTML + noticesHTML;
             }
         }
 
-        // Cat Detail Modal
         function openCatModal(catid, adoptionid) {
             const cat = getCatById(catid);
             const adoption = getAdoptions().find(a => a.adoptionid === adoptionid);
+            if (!cat || !adoption) return;
+            const age = formatAge(cat.dob);
             const foodPrefs = getCatFoodPrefs(catid);
 
-            if (!cat || !adoption) return;
-
-            const modalContent = document.getElementById('cat-modal-content');
-            modalContent.innerHTML = `
-                <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px;">
-                    <div style="width: 120px; height: 120px; border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; background: ${cat.gradient};">
-                        ${getCatImageHTML(cat)}
-                    </div>
+            document.getElementById('cat-modal-content').innerHTML = `
+                <div style="display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.2rem">
+                    <div style="width:100px;height:100px;border-radius:var(--radius);overflow:hidden;flex-shrink:0">${getCatImageHTML(cat)}</div>
                     <div>
-                        <h2 style="margin-bottom: 0;">${adoption.cat_name_given}</h2>
-                        <p style="color: var(--text-light);">${cat.breed} · ${cat.cattitude}</p>
+                        <h2 style="margin:0">${adoption.cat_name_given}</h2>
+                        <p style="color:var(--text-light)">${cat.breed} · ${cat.cattitude}</p>
                         <span class="status-badge ${adoption.status.toLowerCase()}">${adoption.status}</span>
                     </div>
                 </div>
 
-                <div class="detail-grid" style="margin-bottom: 20px;">
-                    <div class="detail-item">
-                        <div class="label">Age</div>
-                        <div class="value">${cat.age}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Gender</div>
-                        <div class="value">${cat.gender}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Fur Color</div>
-                        <div class="value">${cat.fur_color}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Health</div>
-                        <div class="value">${cat.health_status}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Adopted On</div>
-                        <div class="value">${formatDate(adoption.adoption_date)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Pickup Method</div>
-                        <div class="value">${adoption.pickup_method === 'pickup' ? '🏪 Store Pickup' : '🏠 Home Delivery'}</div>
-                    </div>
+                <div class="detail-attrs" style="margin-bottom:1rem">
+                    <span class="detail-attr"><span class="icon">⏳</span> ${age}</span>
+                    <span class="detail-attr"><span class="icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</span>
+                    <span class="detail-attr"><span class="icon">🎨</span> ${cat.fur_color}</span>
+                    <span class="detail-attr"><span class="icon">${cat.health_status === 'Healthy' ? '✅' : '🩺'}</span> ${cat.health_status}</span>
                 </div>
 
+                <p style="font-size:.9rem;color:var(--text-light);margin-bottom:.4rem"><strong>DOB:</strong> ${cat.dob}</p>
+                <p style="font-size:.9rem;color:var(--text-light);margin-bottom:.4rem"><strong>Adopted:</strong> ${formatDate(adoption.adoption_date)}</p>
+                <p style="font-size:.9rem;color:var(--text-light);margin-bottom:1rem"><strong>Pickup:</strong> ${adoption.pickup_method === 'pickup' ? '🏪 Store Pickup' : '🏠 Home Delivery'}</p>
+
                 ${foodPrefs.length > 0 ? `
-                    <div style="background: var(--mint); border-radius: var(--radius-sm); padding: 16px;">
-                        <h4 style="margin-bottom: 8px;">🍽️ ${adoption.cat_name_given}'s Favorite Foods</h4>
-                        <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 8px;">Make sure to stock up on these!</p>
-                        <div class="food-suggestions">
-                            ${foodPrefs.map(f => `<span class="food-chip" style="background: var(--accent); color: #fff; padding: 6px 14px; font-size: 0.85rem;">${f.name} — ₹${f.price}</span>`).join('')}
+                    <div style="background:var(--surface-alt);border-radius:var(--radius);padding:1rem">
+                        <h4>🍽️ ${adoption.cat_name_given}'s Favorite Foods</h4>
+                        <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem">
+                            ${foodPrefs.map(f => `<span class="cat-attr" style="background:var(--primary);color:#fff">${f.name} — ₹${f.price}</span>`).join('')}
                         </div>
-                    </div>
-                ` : ''}
+                    </div>` : ''}
             `;
 
-            document.getElementById('cat-modal').classList.add('active');
+            document.getElementById('cat-modal').classList.add('show');
         }
 
         function closeCatModal() {
-            document.getElementById('cat-modal').classList.remove('active');
+            document.getElementById('cat-modal').classList.remove('show');
         }
-
         document.getElementById('cat-modal').addEventListener('click', function(e) {
             if (e.target === this) closeCatModal();
         });
     </script>
 </body>
 </html>
+

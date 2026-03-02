@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Store — Meowtopia 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+</head>
+<body>
+    <nav class="navbar" id="navbar"></nav>
+
+    <main class="store-container">
+        <div class="store-header">
+            <h1>🛒 Food Store</h1>
+            <p style="color:var(--text-light)">Treat your fur babies to the best nutrition!</p>
+        </div>
+
+        <!-- Suggested Products Bar -->
+        <div class="suggested-bar" id="suggested-bar" style="display:none">
+            <h2>Recommended for your cats ✨</h2>
+            <div class="suggested-products" id="suggested-products"></div>
+        </div>
+
+        <!-- All Products Grid -->
+        <h2 class="section-title" style="font-size:1.3rem">All Products</h2>
+        <div class="products-grid" id="products-grid"></div>
+        <p id="empty-products" style="display:none;text-align:center;color:var(--text-muted);padding:2rem">No food products available yet. Ask the admin to add some!</p>
+    </main>
+
+    <!-- Floating Cart Button -->
+    <button class="floating-cart-btn cart-badge" id="cart-fab" onclick="openCart()">
+        🛒 <span class="cart-count" id="cart-count" style="display:none">0</span>
+    </button>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+
+    <!-- Cart Flyout -->
+    <div class="cart-flyout" id="cart-flyout">
+        <div class="cart-flyout-header">
+            <h2>Your Cart 🛒</h2>
+            <button class="cart-flyout-close" onclick="closeCart()">✕</button>
+        </div>
+        <div class="cart-flyout-body" id="cart-body">
+            <p class="cart-empty">Your cart is empty</p>
+        </div>
+        <div class="cart-flyout-footer" id="cart-footer" style="display:none">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cart-total-amount">₹0</span>
+            </div>
+            <button class="checkout-btn" onclick="handleCheckout()">Checkout 💳</button>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <footer id="footer"></footer>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        renderNavbar('store');
+
+        const user = getCurrentUser();
+        const userid = user ? user.userid : null;
+
+        /* ---- Toast helper ---- */
+        function showToast(msg, type) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast ' + (type || '');
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3200);
+        }
+
+        /* ---- Render Suggested Products ---- */
+        function renderSuggested() {
+            if (!userid) return;
+            const suggested = getSuggestedFoods(userid);
+            if (suggested.length === 0) return;
+
+            document.getElementById('suggested-bar').style.display = '';
+            const container = document.getElementById('suggested-products');
+            container.innerHTML = suggested.map(f => `
+                <div class="sparkle-card product-card" style="min-width:200px;max-width:220px">
+                    <div class="product-card-img">🍽️</div>
+                    <div class="product-card-body">
+                        <h4>${f.name}</h4>
+                        <span class="price">₹${f.price.toFixed(2)}</span>
+                        <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
+                        <button class="add-cart-btn" ${f.qty <= 0 ? 'disabled' : ''} onclick="handleAddToCart(${f.foodid})">
+                            ${f.qty > 0 ? 'Add to Cart' : 'Out of Stock'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* ---- Render All Products ---- */
+        function renderProducts() {
+            const foods = getFood();
+            const grid = document.getElementById('products-grid');
+            const empty = document.getElementById('empty-products');
+
+            if (foods.length === 0) {
+                grid.style.display = 'none';
+                empty.style.display = '';
+                return;
+            }
+
+            grid.style.display = '';
+            empty.style.display = 'none';
+            grid.innerHTML = foods.map(f => `
+                <div class="product-card">
+                    <div class="product-card-img">🍽️</div>
+                    <div class="product-card-body">
+                        <h4>${f.name}</h4>
+                        <span class="price">₹${f.price.toFixed(2)}</span>
+                        <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
+                        <button class="add-cart-btn" ${f.qty <= 0 || !userid ? 'disabled' : ''} onclick="handleAddToCart(${f.foodid})">
+                            ${!userid ? 'Login to Buy' : (f.qty > 0 ? 'Add to Cart' : 'Out of Stock')}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* ---- Cart Functions ---- */
+        function handleAddToCart(foodid) {
+            if (!userid) return;
+            addToCart(userid, foodid, 1);
+            showToast('Added to cart!', 'success');
+            renderCart();
+            renderProducts();
+            renderSuggested();
+        }
+
+        function renderCart() {
+            if (!userid) return;
+            const items = getCart(userid);
+            const body = document.getElementById('cart-body');
+            const footer = document.getElementById('cart-footer');
+            const countEl = document.getElementById('cart-count');
+
+            if (items.length === 0) {
+                body.innerHTML = '<p class="cart-empty">Your cart is empty</p>';
+                footer.style.display = 'none';
+                countEl.style.display = 'none';
+                return;
+            }
+
+            countEl.style.display = '';
+            countEl.textContent = items.reduce((s, i) => s + i.quantity, 0);
+
+            let total = 0;
+            body.innerHTML = items.map(item => {
+                const food = getFoodById(item.foodid);
+                if (!food) return '';
+                const subtotal = food.price * item.quantity;
+                total += subtotal;
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-img">🍽️</div>
+                        <div class="cart-item-info">
+                            <h4>${food.name}</h4>
+                            <span class="cart-item-price">₹${food.price.toFixed(2)} × ${item.quantity}</span>
+                        </div>
+                        <div class="cart-item-qty">
+                            <button onclick="changeQty(${item.cartid},-1)">−</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="changeQty(${item.cartid},1)">+</button>
+                        </div>
+                        <button class="cart-item-remove" onclick="removeItem(${item.cartid})">✕</button>
+                    </div>`;
+            }).join('');
+
+            footer.style.display = '';
+            document.getElementById('cart-total-amount').textContent = '₹' + total.toFixed(2);
+        }
+
+        function changeQty(cartId, delta) {
+            const items = getCart(userid);
+            const item = items.find(i => i.cartid === cartId);
+            if (!item) return;
+            const newQty = item.quantity + delta;
+            if (newQty <= 0) { removeFromCart(cartId); }
+            else { updateCartItem(cartId, newQty); }
+            renderCart();
+        }
+
+        function removeItem(cartId) {
+            removeFromCart(cartId);
+            renderCart();
+        }
+
+        function openCart() {
+            document.getElementById('cart-flyout').classList.add('open');
+            document.getElementById('cart-overlay').classList.add('show');
+        }
+        function closeCart() {
+            document.getElementById('cart-flyout').classList.remove('open');
+            document.getElementById('cart-overlay').classList.remove('show');
+        }
+
+        function handleCheckout() {
+            if (!userid) return;
+            const result = checkout(userid);
+            if (result.success) {
+                showToast('🎉 Order placed successfully!', 'success');
+                closeCart();
+                renderCart();
+                renderProducts();
+                renderSuggested();
+            } else {
+                showToast('❌ ' + (result.error || 'Checkout failed'), 'error');
+            }
+        }
+
+        /* ---- Init ---- */
+        renderSuggested();
+        renderProducts();
+        renderCart();
+    </script>
+</body>
+</html>

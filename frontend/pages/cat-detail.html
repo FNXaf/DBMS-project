@@ -1,24 +1,22 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cat Details — Meowtopia 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
 <body>
     <nav class="navbar" id="navbar"></nav>
 
-    <main>
-        <section class="section">
-            <div class="container">
-                <div id="cat-detail-content"></div>
-            </div>
-        </section>
+    <main class="detail-container">
+        <a href="cats.html" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-light);font-weight:600;margin-bottom:1.2rem">← Back to all cats</a>
+        <div id="cat-detail-content"></div>
     </main>
 
-    <footer class="footer" id="footer"></footer>
+    <footer id="footer"></footer>
 
     <script src="../js/data.js"></script>
     <script src="../js/app.js"></script>
@@ -31,83 +29,72 @@
 
         if (!cat) {
             content.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-emoji">😿</div>
+                <div style="text-align:center;padding:3rem 0">
+                    <div style="font-size:3rem">😿</div>
                     <h3>Cat not found</h3>
-                    <p>This kitty might have already found a home!</p>
-                    <a href="cats.html" class="btn btn-primary mt-2">Browse Other Cats</a>
-                </div>
-            `;
+                    <p style="color:var(--text-light)">This kitty might have already found a home!</p>
+                    <a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Browse Other Cats</a>
+                </div>`;
         } else {
-            document.title = `${cat.breed} — Meowtopia 🐾`;
+            document.title = `${cat.shelter_name} — Meowtopia 🐾`;
             const user = getCurrentUser();
             const foodPrefs = getCatFoodPrefs(cat.catid);
+            const age = formatAge(cat.dob);
+            const healthClass = cat.health_status === 'Healthy' ? 'healthy' : 'needs-care';
 
-            let adoptButton = '';
+            let adoptBtn = '';
             if (cat.is_available) {
-                if (user) {
-                    adoptButton = `<a href="adopt.html?id=${cat.catid}" class="btn btn-primary" style="font-size: 1.1rem; padding: 14px 36px;">Adopt Me 🐾</a>`;
-                } else {
-                    adoptButton = `<a href="login.html" class="btn btn-outline" style="font-size: 1.1rem; padding: 14px 36px;">Login to Adopt 🔐</a>`;
+                if (user && user.role !== 'admin') {
+                    adoptBtn = `<a href="adopt.html?id=${cat.catid}" class="btn-primary" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;font-size:1.05rem">Adopt Me 🐾</a>`;
+                } else if (!user) {
+                    adoptBtn = `<a href="login.html" class="btn-outline" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;font-size:1.05rem">Login to Adopt 🔐</a>`;
                 }
             } else {
-                adoptButton = `<span class="btn btn-secondary" style="opacity: 0.6; cursor: not-allowed; font-size: 1.1rem; padding: 14px 36px;">Already Adopted 💕</span>`;
+                adoptBtn = `<span class="btn-outline" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;opacity:.6;cursor:not-allowed">Already Adopted 💕</span>`;
             }
 
             const foodHTML = foodPrefs.length > 0 ? `
-                <div style="margin-top: 24px; padding: 20px; background: var(--mint); border-radius: var(--radius-sm);">
-                    <h4 style="margin-bottom: 8px;">🍽️ Favorite Foods</h4>
-                    <div class="food-suggestions">
-                        ${foodPrefs.map(f => `<span class="food-chip" style="background: var(--accent); color: #fff;">${f.name} — ₹${f.price}</span>`).join('')}
+                <div style="margin-top:1.2rem;padding:1rem;background:var(--surface-alt);border-radius:var(--radius)">
+                    <h4>🍽️ Favorite Foods</h4>
+                    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem">
+                        ${foodPrefs.map(f => `<span class="cat-attr" style="background:var(--primary);color:#fff">${f.name} — ₹${f.price}</span>`).join('')}
                     </div>
-                </div>
-            ` : '';
+                </div>` : '';
 
             content.innerHTML = `
-                <a href="cats.html" style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-light); font-weight: 600; margin-bottom: 24px;">
-                    ← Back to all cats
-                </a>
-                <div class="detail-container">
-                    <div class="detail-image" style="background: ${cat.gradient};">
-                        ${getCatImageHTML(cat, 'detail')}
+                <div class="detail-grid">
+                    <div class="detail-img">
+                        ${getCatImageHTML(cat)}
                     </div>
                     <div class="detail-info">
-                        <h1>${cat.name || 'Unnamed Kitty'}</h1>
-                        <p class="detail-breed">${cat.breed} · ${cat.cattitude}</p>
+                        <h1>${cat.shelter_name}</h1>
+                        <p class="breed">${cat.breed}</p>
 
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <div class="label">Age</div>
-                                <div class="value">${cat.age}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="label">Gender</div>
-                                <div class="value">${cat.gender}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="label">Fur Color</div>
-                                <div class="value">${cat.fur_color}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="label">Health Status</div>
-                                <div class="value">${cat.health_status}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="label">Cattitude</div>
-                                <div class="value">${cat.cattitude}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="label">Intake Date</div>
-                                <div class="value">${formatDate(cat.intake_date)}</div>
-                            </div>
+                        <div class="detail-attrs">
+                            <span class="detail-attr"><span class="icon">⏳</span> ${age}</span>
+                            <span class="detail-attr"><span class="icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</span>
+                            <span class="detail-attr"><span class="icon">🎨</span> ${cat.fur_color}</span>
+                            <span class="detail-attr"><span class="icon">😸</span> ${cat.cattitude}</span>
                         </div>
 
-                        ${adoptButton}
+                        <p class="detail-health ${healthClass}">
+                            ${cat.health_status === 'Healthy' ? '✅' : '🩺'} ${cat.health_status}
+                        </p>
+
+                        <p class="detail-desc">
+                            <strong>Date of Birth:</strong> ${cat.dob}<br>
+                            <strong>Intake Date:</strong> ${formatDate(cat.intake_date)}
+                        </p>
+
                         ${foodHTML}
+
+                        <div class="detail-actions">
+                            ${adoptBtn}
+                        </div>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
     </script>
 </body>
 </html>
+

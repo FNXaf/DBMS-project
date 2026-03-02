@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meowtopia — Find Your Purrfect Companion 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
@@ -11,101 +12,102 @@
     <nav class="navbar" id="navbar"></nav>
 
     <main>
-        <!-- Hero Section -->
+        <!-- Hero Section — video background -->
         <section class="hero">
-            <div class="container">
-                <h1>Find your <span class="highlight">purrfect</span> companion 🐱</h1>
+            <!--
+                Replace the src below with your own cat/adoption video.
+                Using a free stock video placeholder for now.
+            -->
+            <video class="hero-video" autoplay muted loop playsinline
+                   poster="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=1200&q=80">
+                <source src="https://cdn.pixabay.com/video/2020/07/30/45362-445830244_large.mp4" type="video/mp4">
+            </video>
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>Find your purrfect companion 🐱</h1>
                 <p>Welcome to Meowtopia — where every cat finds a loving home and every human finds their perfect match.</p>
-                <div class="hero-buttons">
-                    <a href="pages/cats.html" class="btn btn-primary">Browse Cats 🐾</a>
-                    <a href="pages/register.html" class="btn btn-outline">Create Account</a>
-                </div>
+                <a href="pages/cats.html" class="btn">Browse Cats 🐾</a>
             </div>
         </section>
 
         <!-- Featured Cats -->
         <section class="section">
-            <div class="container">
-                <h2 class="section-title">Meet Our Adorable Residents 🏠</h2>
-                <p class="section-subtitle">These cuties are looking for their forever homes — could you be the one?</p>
-                <div class="cat-grid" id="featured-cats"></div>
-                <div class="text-center mt-4">
-                    <a href="pages/cats.html" class="btn btn-outline">View All Cats →</a>
-                </div>
+            <h2 class="section-title">Meet Our Adorable Residents 🏠</h2>
+            <div class="cats-grid" id="featured-cats"></div>
+            <div class="text-center mt-3">
+                <a href="pages/cats.html" class="btn-outline" style="display:inline-block;padding:.7rem 1.6rem;border-radius:8px">View All Cats →</a>
             </div>
         </section>
 
         <!-- How It Works -->
-        <section class="section" style="background: linear-gradient(135deg, #f8d0e3 0%, #c5f0e0 100%); padding: 60px 24px;">
-            <div class="container">
-                <h2 class="section-title">How Adoption Works 💕</h2>
-                <p class="section-subtitle">Three simple steps to bring home your new best friend</p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-top: 32px;">
-                    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 32px; text-align: center; box-shadow: var(--shadow);">
-                        <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
-                        <h3 style="margin-bottom: 8px;">1. Browse & Choose</h3>
-                        <p style="color: var(--text-light); font-size: 0.95rem;">Explore our selection of adorable cats and find the one that steals your heart.</p>
-                    </div>
-                    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 32px; text-align: center; box-shadow: var(--shadow);">
-                        <div style="font-size: 48px; margin-bottom: 12px;">📝</div>
-                        <h3 style="margin-bottom: 8px;">2. Fill the Form</h3>
-                        <p style="color: var(--text-light); font-size: 0.95rem;">Give your new fur baby a name and choose how you'd like to pick them up.</p>
-                    </div>
-                    <div style="background: var(--card-bg); border-radius: var(--radius); padding: 32px; text-align: center; box-shadow: var(--shadow);">
-                        <div style="font-size: 48px; margin-bottom: 12px;">🏡</div>
-                        <h3 style="margin-bottom: 8px;">3. Welcome Home!</h3>
-                        <p style="color: var(--text-light); font-size: 0.95rem;">Pick up your cat or get them delivered — and start your life as a cat parent!</p>
-                    </div>
+        <section class="section" style="background:linear-gradient(135deg,#f1f0ff,#fff5f7);border-radius:16px;margin:2rem auto;max-width:1200px">
+            <h2 class="section-title">How Adoption Works 💕</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.4rem;margin-top:1.2rem">
+                <div style="background:var(--surface);border-radius:var(--radius);padding:2rem;text-align:center;box-shadow:var(--shadow)">
+                    <div style="font-size:2.8rem;margin-bottom:.6rem">🔍</div>
+                    <h3>1. Browse &amp; Choose</h3>
+                    <p style="color:var(--text-light);font-size:.92rem;margin-top:.4rem">Explore our selection of adorable cats and find the one that steals your heart.</p>
+                </div>
+                <div style="background:var(--surface);border-radius:var(--radius);padding:2rem;text-align:center;box-shadow:var(--shadow)">
+                    <div style="font-size:2.8rem;margin-bottom:.6rem">📝</div>
+                    <h3>2. Fill the Form</h3>
+                    <p style="color:var(--text-light);font-size:.92rem;margin-top:.4rem">Give your new fur baby a name and choose how you'd like to pick them up.</p>
+                </div>
+                <div style="background:var(--surface);border-radius:var(--radius);padding:2rem;text-align:center;box-shadow:var(--shadow)">
+                    <div style="font-size:2.8rem;margin-bottom:.6rem">🏡</div>
+                    <h3>3. Welcome Home!</h3>
+                    <p style="color:var(--text-light);font-size:.92rem;margin-top:.4rem">Pick up your cat or get them delivered — and start your life as a cat parent!</p>
                 </div>
             </div>
         </section>
 
         <!-- Stats -->
-        <section class="section">
-            <div class="container text-center">
-                <h2 class="section-title">Meowtopia in Numbers 📊</h2>
-                <div style="display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; margin-top: 32px;">
-                    <div>
-                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-dark);" id="stat-cats">0</div>
-                        <div style="color: var(--text-light); font-weight: 600;">Cats Available</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--rose);" id="stat-adopted">0</div>
-                        <div style="color: var(--text-light); font-weight: 600;">Happy Adoptions</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent-dark);" id="stat-breeds">0</div>
-                        <div style="color: var(--text-light); font-weight: 600;">Breeds</div>
-                    </div>
+        <section class="section text-center">
+            <h2 class="section-title">Meowtopia in Numbers 📊</h2>
+            <div style="display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;margin-top:1.2rem">
+                <div>
+                    <div style="font-size:2.5rem;font-weight:900;color:var(--primary)" id="stat-cats">0</div>
+                    <div style="color:var(--text-light);font-weight:600">Cats Available</div>
+                </div>
+                <div>
+                    <div style="font-size:2.5rem;font-weight:900;color:var(--accent)" id="stat-adopted">0</div>
+                    <div style="color:var(--text-light);font-weight:600">Happy Adoptions</div>
+                </div>
+                <div>
+                    <div style="font-size:2.5rem;font-weight:900;color:var(--primary-dark)" id="stat-breeds">0</div>
+                    <div style="color:var(--text-light);font-weight:600">Breeds</div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="footer" id="footer"></footer>
+    <!-- Reset Data Button (remove this section before production) -->
+    <div class="reset-section">
+        <button class="reset-btn" onclick="if(confirm('Reset ALL Meowtopia data to defaults?')){resetAllData();location.reload()}">
+            🗑️ Reset Demo Data
+        </button>
+    </div>
+
+    <footer id="footer"></footer>
 
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Render navbar
         renderNavbar('home');
 
-        // Load featured cats (show up to 6 random available ones)
-        const availableCats = getAvailableCats();
-        const shuffled = availableCats.sort(() => 0.5 - Math.random());
-        const featured = shuffled.slice(0, 6);
-
-        const grid = document.getElementById('featured-cats');
-        grid.innerHTML = featured.map(cat => createCatCard(cat, '')).join('');
+        // Featured cats — up to 6 random available
+        const available = getAvailableCats();
+        const shuffled = available.sort(() => 0.5 - Math.random()).slice(0, 6);
+        document.getElementById('featured-cats').innerHTML = shuffled.map(c => createCatCard(c, '')).join('');
 
         // Stats
         const allCats = getCats();
         const adoptions = getAdoptions();
         const breeds = [...new Set(allCats.map(c => c.breed))];
-
-        document.getElementById('stat-cats').textContent = availableCats.length;
+        document.getElementById('stat-cats').textContent = available.length;
         document.getElementById('stat-adopted').textContent = adoptions.length;
         document.getElementById('stat-breeds').textContent = breeds.length;
     </script>
 </body>
 </html>
+

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Meowtopia 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
@@ -30,7 +31,7 @@
                     <div class="error-text">Password is required</div>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block">Login 🐾</button>
+                <button type="submit" class="form-submit">Login 🐾</button>
             </form>
 
             <div class="form-footer">
@@ -40,14 +41,14 @@
             <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
                 <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 8px;">Quick Demo Accounts:</p>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-                    <button class="btn btn-sm btn-accent" onclick="fillDemo('admin@meowtopia.com', 'admin123')">Admin Login</button>
-                    <button class="btn btn-sm btn-secondary" onclick="fillDemo('sam@example.com', 'sam123')">User Login</button>
+                    <button class="btn-primary" style="padding:.4rem .8rem;border-radius:8px;font-size:.82rem;cursor:pointer" onclick="fillDemo('admin@meowtopia.com', 'admin123')">Admin Login</button>
+                    <button class="btn-outline" style="padding:.4rem .8rem;border-radius:8px;font-size:.82rem;cursor:pointer" onclick="fillDemo('sam@example.com', 'sam123')">User Login</button>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="footer" id="footer"></footer>
+    <footer id="footer"></footer>
 
     <script src="../js/data.js"></script>
     <script src="../js/app.js"></script>

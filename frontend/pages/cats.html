@@ -1,130 +1,204 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse Cats — Meowtopia 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
 <body>
     <nav class="navbar" id="navbar"></nav>
 
-    <main>
-        <div class="page-header">
-            <h1>Browse Our Cats 🐱</h1>
-            <p>Find your purrfect match from our adorable residents</p>
-        </div>
+    <main class="section">
+        <h1 class="section-title">Browse Our Cats 🐱</h1>
 
-        <section class="section">
-            <div class="container">
-                <!-- Filters -->
-                <div class="filters-bar">
-                    <div class="filter-group">
-                        <label>Breed</label>
-                        <select id="filter-breed" onchange="applyFilters()">
-                            <option value="">All Breeds</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Gender</label>
-                        <select id="filter-gender" onchange="applyFilters()">
-                            <option value="">All Genders</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Fur Color</label>
-                        <select id="filter-fur" onchange="applyFilters()">
-                            <option value="">All Colors</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Cattitude</label>
-                        <select id="filter-cattitude" onchange="applyFilters()">
-                            <option value="">All Personalities</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>&nbsp;</label>
-                        <button class="btn btn-sm btn-accent" onclick="clearFilters()">Clear Filters</button>
+        <div class="browse-layout">
+            <!-- Mobile filter toggle -->
+            <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">☰ Filters</button>
+            <div class="filter-overlay" id="filter-overlay" onclick="toggleFilterSidebar()"></div>
+
+            <!-- FILTER SIDEBAR -->
+            <aside class="filter-sidebar" id="filter-sidebar">
+                <h3>Filters <button onclick="clearAllFilters()">Clear All</button></h3>
+
+                <!-- Gender (single-toggle) -->
+                <div class="filter-group">
+                    <label>Gender</label>
+                    <div class="toggle-group" id="fg-gender">
+                        <button class="toggle-btn" data-val="Male" onclick="toggleSingle(this)">♂ Male</button>
+                        <button class="toggle-btn" data-val="Female" onclick="toggleSingle(this)">♀ Female</button>
                     </div>
                 </div>
 
-                <!-- Results count -->
-                <p id="results-count" style="margin-bottom: 16px; color: var(--text-light); font-weight: 600;"></p>
+                <!-- Fur Color (multi-select) -->
+                <div class="filter-group">
+                    <label>Fur Color</label>
+                    <div class="chip-group" id="fg-fur"></div>
+                </div>
 
-                <!-- Cat Grid -->
-                <div class="cat-grid" id="cat-grid"></div>
+                <!-- Breed (multi-select) -->
+                <div class="filter-group">
+                    <label>Breed</label>
+                    <div class="chip-group" id="fg-breed"></div>
+                </div>
+
+                <!-- Age Range (min-max in months) -->
+                <div class="filter-group">
+                    <label>Age (months)</label>
+                    <div class="range-inputs">
+                        <input type="number" id="age-min" min="0" max="240" value="0" placeholder="Min" onchange="applyFilters()">
+                        <span>–</span>
+                        <input type="number" id="age-max" min="0" max="240" value="240" placeholder="Max" onchange="applyFilters()">
+                    </div>
+                </div>
+
+                <!-- Cattitude (multi-select) -->
+                <div class="filter-group">
+                    <label>Cattitude</label>
+                    <div class="chip-group" id="fg-cattitude"></div>
+                </div>
+
+                <!-- Health Status (single-toggle) -->
+                <div class="filter-group">
+                    <label>Health</label>
+                    <div class="toggle-group" id="fg-health">
+                        <button class="toggle-btn" data-val="Healthy" onclick="toggleSingle(this)">✅ Healthy</button>
+                        <button class="toggle-btn" data-val="Needs Care" onclick="toggleSingle(this)">🩺 Needs Care</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <div class="browse-main">
+                <div class="sort-bar">
+                    <span class="results-count" id="results-count"></span>
+                    <select id="sort-by" onchange="applyFilters()">
+                        <option value="name-asc">Name A-Z</option>
+                        <option value="name-desc">Name Z-A</option>
+                        <option value="age-asc">Youngest First</option>
+                        <option value="age-desc">Oldest First</option>
+                        <option value="breed-asc">Breed A-Z</option>
+                    </select>
+                </div>
+
+                <div class="cats-grid" id="cat-grid"></div>
 
                 <!-- Empty State -->
-                <div class="empty-state" id="empty-state" style="display: none;">
-                    <div class="empty-emoji">😿</div>
+                <div id="empty-state" style="display:none;text-align:center;padding:3rem 1rem">
+                    <div style="font-size:3rem">😿</div>
                     <h3>No cats match your filters</h3>
-                    <p>Try changing your filter options to find more cuties!</p>
-                    <button class="btn btn-primary mt-2" onclick="clearFilters()">Show All Cats</button>
+                    <p style="color:var(--text-light)">Try changing your filter options to find more cuties!</p>
+                    <button class="btn-primary mt-2" onclick="clearAllFilters()">Show All Cats</button>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
-    <footer class="footer" id="footer"></footer>
+    <footer id="footer"></footer>
 
     <script src="../js/data.js"></script>
     <script src="../js/app.js"></script>
     <script>
         renderNavbar('cats');
 
-        // Populate filter dropdowns
+        /* ---- Populate filter chips ---- */
         const allCats = getCats();
-        const breeds = [...new Set(allCats.map(c => c.breed))].sort();
-        const furColors = [...new Set(allCats.map(c => c.fur_color))].sort();
-        const cattitudes = [...new Set(allCats.map(c => c.cattitude))].sort();
+        const uniq = (arr) => [...new Set(arr)].sort();
 
-        const breedSelect = document.getElementById('filter-breed');
-        breeds.forEach(b => {
-            const opt = document.createElement('option');
-            opt.value = b; opt.textContent = b;
-            breedSelect.appendChild(opt);
-        });
+        function buildChips(containerId, values) {
+            const c = document.getElementById(containerId);
+            c.innerHTML = values.map(v =>
+                `<button class="chip" data-val="${v}" onclick="toggleChip(this)">${v}</button>`
+            ).join('');
+        }
+        buildChips('fg-fur', uniq(allCats.map(c => c.fur_color)));
+        buildChips('fg-breed', uniq(allCats.map(c => c.breed)));
+        buildChips('fg-cattitude', uniq(allCats.map(c => c.cattitude)));
 
-        const furSelect = document.getElementById('filter-fur');
-        furColors.forEach(f => {
-            const opt = document.createElement('option');
-            opt.value = f; opt.textContent = f;
-            furSelect.appendChild(opt);
-        });
-
-        const cattitudeSelect = document.getElementById('filter-cattitude');
-        cattitudes.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c; opt.textContent = c;
-            cattitudeSelect.appendChild(opt);
-        });
-
-        function applyFilters() {
-            const breed = document.getElementById('filter-breed').value;
-            const gender = document.getElementById('filter-gender').value;
-            const fur = document.getElementById('filter-fur').value;
-            const cattitude = document.getElementById('filter-cattitude').value;
-
-            let cats = getAvailableCats();
-
-            if (breed) cats = cats.filter(c => c.breed === breed);
-            if (gender) cats = cats.filter(c => c.gender === gender);
-            if (fur) cats = cats.filter(c => c.fur_color === fur);
-            if (cattitude) cats = cats.filter(c => c.cattitude === cattitude);
-
-            renderCats(cats);
+        /* ---- Toggle helpers ---- */
+        function toggleSingle(btn) {
+            const isActive = btn.classList.contains('active');
+            btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            if (!isActive) btn.classList.add('active');
+            applyFilters();
+        }
+        function toggleChip(btn) {
+            btn.classList.toggle('active');
+            applyFilters();
+        }
+        function getActiveVals(containerId) {
+            return [...document.getElementById(containerId).querySelectorAll('.active')].map(b => b.dataset.val);
+        }
+        function getSingleVal(containerId) {
+            const a = document.getElementById(containerId).querySelector('.active');
+            return a ? a.dataset.val : '';
         }
 
-        function clearFilters() {
-            document.getElementById('filter-breed').value = '';
-            document.getElementById('filter-gender').value = '';
-            document.getElementById('filter-fur').value = '';
-            document.getElementById('filter-cattitude').value = '';
+        /* ---- Mobile sidebar toggle ---- */
+        function toggleFilterSidebar() {
+            document.getElementById('filter-sidebar').classList.toggle('open');
+            document.getElementById('filter-overlay').classList.toggle('show');
+        }
+
+        /* ---- Clear All ---- */
+        function clearAllFilters() {
+            document.querySelectorAll('.toggle-btn.active, .chip.active').forEach(b => b.classList.remove('active'));
+            document.getElementById('age-min').value = 0;
+            document.getElementById('age-max').value = 240;
             applyFilters();
+        }
+
+        /* ---- Apply Filters & Sort ---- */
+        function applyFilters() {
+            let cats = getAvailableCats();
+
+            // Gender
+            const gender = getSingleVal('fg-gender');
+            if (gender) cats = cats.filter(c => c.gender === gender);
+
+            // Fur color
+            const furs = getActiveVals('fg-fur');
+            if (furs.length) cats = cats.filter(c => furs.includes(c.fur_color));
+
+            // Breed
+            const breeds = getActiveVals('fg-breed');
+            if (breeds.length) cats = cats.filter(c => breeds.includes(c.breed));
+
+            // Age range (months)
+            const ageMin = parseInt(document.getElementById('age-min').value) || 0;
+            const ageMax = parseInt(document.getElementById('age-max').value) || 240;
+            cats = cats.filter(c => {
+                const m = getAgeMonths(c.dob);
+                return m >= ageMin && m <= ageMax;
+            });
+
+            // Cattitude
+            const catts = getActiveVals('fg-cattitude');
+            if (catts.length) cats = cats.filter(c => catts.includes(c.cattitude));
+
+            // Health
+            const health = getSingleVal('fg-health');
+            if (health) cats = cats.filter(c => c.health_status === health);
+
+            // Sort
+            const sort = document.getElementById('sort-by').value;
+            cats.sort((a, b) => {
+                switch(sort) {
+                    case 'name-asc': return (a.shelter_name || '').localeCompare(b.shelter_name || '');
+                    case 'name-desc': return (b.shelter_name || '').localeCompare(a.shelter_name || '');
+                    case 'age-asc': return getAgeMonths(b.dob) - getAgeMonths(a.dob); // youngest = most recent DOB = fewer months? No: youngest = smallest age months
+                    case 'age-desc': return getAgeMonths(a.dob) - getAgeMonths(b.dob);
+                    case 'breed-asc': return a.breed.localeCompare(b.breed);
+                    default: return 0;
+                }
+            });
+            // Fix: youngest = smallest getAgeMonths
+            if (sort === 'age-asc') cats.sort((a,b) => getAgeMonths(a.dob) - getAgeMonths(b.dob));
+            if (sort === 'age-desc') cats.sort((a,b) => getAgeMonths(b.dob) - getAgeMonths(a.dob));
+
+            renderCats(cats);
         }
 
         function renderCats(cats) {
@@ -138,15 +212,15 @@
                 empty.style.display = 'block';
                 count.textContent = '';
             } else {
-                grid.style.display = 'grid';
+                grid.style.display = '';
                 empty.style.display = 'none';
-                count.textContent = `Showing ${cats.length} adorable cat${cats.length > 1 ? 's' : ''} 🐾`;
+                count.textContent = `Showing ${cats.length} adorable cat${cats.length !== 1 ? 's' : ''} 🐾`;
                 grid.innerHTML = cats.map(cat => createCatCard(cat, '../')).join('');
             }
         }
 
-        // Initial render
         applyFilters();
     </script>
 </body>
 </html>
+
