@@ -123,15 +123,15 @@ This is a **DBMS academic project**, not a production app. Keep the following in
 |-------|-----------|
 | Frontend | React.js (or plain HTML/CSS/JS) |
 | Backend | Node.js with Express (or Python Flask) |
-| Database | MySQL or PostgreSQL |
+| Database | MySQL |
 | Hosting | Localhost for now (XAMPP, or Node + local DB) |
 
 > 💡 **Hosting Note:** For an academic project, running everything on your own laptop using something like XAMPP (for MySQL) or just running Node + MySQL locally is completely fine. No need to pay for hosting. If you want to share it online later, free tiers on Railway, Render, or Supabase work well.
 
 ---
 
-## Working Style Notes
-- You and Sam are working together — either of you might be the one talking to the AI at any given time.
+## Working Style Notes (FOR THE CREATORS)
+- Shlok and Sam are working together — either of you might be the one talking to the AI at any given time.
 - Don't assume the full system is already built. Ask or check what's already done before generating conflicting code.
 - When in doubt, suggest the simpler implementation — this is academic, not enterprise.
 - New features will be requested over time. Always be ready to extend without breaking what exists.
