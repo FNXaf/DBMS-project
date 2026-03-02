@@ -19,24 +19,40 @@ If you need clarification on overall system behavior, refer to the **Main System
 ## Pages & Components to Build
 
 ### 1. 🏠 Home / Landing Page
-- Hero section with a tagline like _"Find your purrfect companion at Meowtopia"_
+- **Hero section with background video:** A full-bleed, autoplaying, muted, looping background video (similar to The French Workshop bakery website style). The video should cover the entire hero viewport with `object-fit: cover`, have a poster/fallback image, and use `autoplay muted loop playsinline` attributes. Overlay text with the tagline (e.g., _"Find your purrfect companion at Meowtopia"_) and a CTA button.
 - A featured/random selection of cats available for adoption (cards)
 - Call to action: Browse Cats, Sign Up
+- **"Reset Data" button** at the bottom of the page — clears all `localStorage` mock data and reinitializes defaults. This is for development convenience while using the static frontend. Keep it **isolated and easy to remove** when the real backend is connected (e.g., wrap in a clearly-marked section/function). Style it subtly — small, muted color, not prominent.
 
-### 2. 🐾 Cat Listings Page
-- Grid of cat cards showing: photo, name (or "Unnamed"), breed, age, gender, cattitude
-- Filter/search options: breed, age range, gender, fur color
-- Each card has a "Meet Me →" button leading to the cat's detail page
+### 2. 🐾 Cat Listings Page (Browse Cats)
+- Grid of cat cards. **Card design:**
+  - **Title:** The cat's `shelter_name` (admin-assigned temporary name) — this is the primary label on each card. Do NOT show "Unnamed Kitty" — almost all cats are unnamed initially, so it's redundant.
+  - **Photo** of the cat
+  - **Key attributes** displayed in a clean, readable layout (NOT bubble/pill tags). Use a subtle, integrated design — e.g., small icon + text pairs, a mini info grid, or delicate typography-based layout. Avoid flashy colored bubbles for attributes.
+  - Attributes to show on card: breed, gender, age (derived from DOB, displayed in months), cattitude
+  - Health status should NOT be prominently displayed on every card — save it for the detail page.
+  - Each card has a "Meet Me →" button leading to the cat's detail page.
+
+- **Filter button** that opens a **smart sidebar** (slide-in from the side). Filter options:
+  - **Gender:** Single-select toggle. Clicking one option selects it; clicking the other switches; clicking the already-selected one deselects (clears the gender filter). Think toggle buttons, not radio buttons — the user must be able to clear the selection.
+  - **Fur Color:** Multi-select (checkboxes or toggleable chips). User can pick multiple.
+  - **Breed:** Multi-select.
+  - **Age:** Min–Max range slider (in **months**). Two handles on a single track.
+  - **Cattitude:** Multi-select.
+  - **Health Status:** Single-select toggle (same behavior as gender).
+  - A "Clear All Filters" button within the sidebar.
+
+- **Sort-by dropdown** (outside the sidebar, always visible). Options like: Newest, Oldest, Name A–Z, Name Z–A, Youngest First, Oldest First.
 
 ### 3. 🐱 Cat Detail Page
 - Full photo of the cat
-- All details: breed, age, gender, fur color, cattitude, health status, intake date
+- All details: **shelter_name** (as heading), breed, **age (derived from DOB, shown in a readable format like "7 months" or "2 years, 3 months")**, gender, fur color, cattitude, health status, intake date
 - "Adopt Me" button (only visible to logged-in users; guests see "Login to Adopt")
 
 ### 4. 📝 Adoption Form Page (Logged-in users only)
 Fields:
 - User's name, phone, address (pre-filled if available)
-- Name they want to give the cat
+- Name they want to give the cat (this becomes the cat's permanent name)
 - Pickup method: `Store Pickup` or `Home Delivery` (radio button or toggle)
 - Submit button: "Complete Adoption 🐾"
 
@@ -64,24 +80,54 @@ Layout:
   - More/extra photos if available
 - **Notices section:** Small card-based area showing things like:
   - "🩺 Vet visit reminder for [cat name] on [date]"
-  - "🎂 [Cat name]'s birthday is coming up on [date]!"
+  - "🎂 [Cat name]'s birthday is coming up on [date]!" — **derived from DOB**
   - These can be hardcoded/static for now if the backend isn't ready
 
-### 7. 🛠️ Admin Panel (Admin users only)
+### 7. 🛒 Food Store Page (Owners only)
+A dedicated page for cat owners to purchase food. Layout (top to bottom):
+
+#### Suggested Products Bar (Top Section)
+- Displays food items that match the food preferences of the owner's adopted cats. If the owner has multiple cats, aggregate all their preferences.
+- **Visual treatment:** This section must look special — use sparkle effects, four-point star decorations, a subtle glow, or shimmering animations. Label it something like _"Recommended for your cats ✨"_ or _"Picked just for your fur babies"_. The goal: the UI should make the user feel like these are smart, personalized recommendations — **without** ever explicitly saying "AI" anywhere.
+- If the owner has no food preferences set for their cats, this section simply doesn't appear.
+
+#### All Products Grid
+- Standard e-commerce-style product cards: photo/icon, food name, price, stock left.
+- Each card has an **"Add to Cart"** button with a quantity selector (or defaults to 1).
+- If an item is out of stock (`qty === 0`), show it as disabled/unavailable.
+
+#### Cart (Sidebar or Flyout)
+- Shows all added items, quantity per item, subtotal per item, and grand total.
+- Allow quantity adjustments and item removal within the cart.
+- **"Checkout"** button at bottom of cart.
+
+#### Checkout Flow
+- Simple confirmation step — show order summary, total amount.
+- On confirm: items are "purchased" — inventory (`food.qty`) is decremented accordingly.
+- Show a success message (e.g., _"Your order is confirmed! Your fur babies will love it 🐾"_).
+- No real payment processing — this is academic.
+
+### 8. 🛠️ Admin Panel (Admin users only)
 - Separate login route or role-based redirect after login
 - Pages:
   - **Cat Management:** Table/list of all cats; Add, Edit, Delete buttons
-  - **Add Cat Form:** All cat attributes including photo upload (file input)
+  - **Add Cat Form:** All cat attributes including:
+    - `shelter_name` — **required, unique** (show validation if duplicate)
+    - `dob` — **required** (date picker, NOT a text age field)
+    - Photo upload (file input)
+    - All other attributes (breed, fur_color, gender, health_status, cattitude, etc.)
   - **Adoption Requests:** Table of all adoptions with status (Pending / Approved / Completed)
-  - **Food Management:** Table of food items; Add/Edit/Delete
+  - **Food Management:** Table of food items; Add/Edit/Delete; inventory quantity management
 
 ---
 
 ## Frontend-Backend Communication
 - The frontend communicates with the backend via **REST API calls** (fetch or axios)
-- All dynamic data (cats, user info, adoptions, food suggestions) comes from the backend
+- All dynamic data (cats, user info, adoptions, food store, cart) comes from the backend
 - Use loading states while data fetches
 - Handle API errors gracefully with friendly messages (e.g., "Oops! Something went wrong. Try again?")
+
+> **Static Frontend Phase:** While the backend isn't built yet, ALL data is simulated using `localStorage` via a mock data layer (`data.js`). This mock layer exposes the same function signatures as future API calls, making the switch to real API calls straightforward.
 
 ---
 
@@ -89,36 +135,43 @@ Layout:
 - After login, store a token or session indicator (localStorage token or cookie)
 - Use this to:
   - Show/hide "Adopt Me" buttons
-  - Protect Owner Dashboard and Admin Panel routes
+  - Protect Owner Dashboard, Food Store, and Admin Panel routes
   - Pre-fill form fields
-- If a non-owner tries to access the dashboard, show a message like: _"You haven't adopted any cats yet! Browse our cats and find your match 🐾"_
+- If a non-owner tries to access the dashboard or food store, show a message like: _"You haven't adopted any cats yet! Browse our cats and find your match 🐾"_
 
 ---
 
-## Component Suggestions (if using React)
-| Component | Purpose |
+## Component Suggestions (Plain HTML/CSS/JS)
+| Component / File | Purpose |
 |-----------|---------|
-| `CatCard` | Reusable card for listings |
-| `AdoptionForm` | The adoption form with popup logic |
-| `AdoptionPopup` | Cute modal after adoption |
-| `OwnerDashboard` | Dashboard layout for owners |
-| `CatDetailModal` | Clicked cat detail overlay in dashboard |
-| `AdminTable` | Reusable table for admin views |
-| `NoticeCard` | Vet/birthday notice mini cards |
-| `Navbar` | Navigation with auth-aware links |
+| Cat Card | Reusable card for listings — shelter_name as title, clean attribute layout |
+| Adoption Form | The adoption form with popup logic |
+| Adoption Popup | Cute modal after adoption |
+| Owner Dashboard | Dashboard layout for owners |
+| Cat Detail Modal | Clicked cat detail overlay in dashboard |
+| Admin Table | Reusable table for admin views |
+| Notice Card | Vet/birthday notice mini cards |
+| Navbar | Navigation with auth-aware links |
+| Filter Sidebar | Smart slide-in sidebar with toggles, multi-select, and range slider |
+| Food Store | Product grid + suggested products bar |
+| Cart Flyout | Shopping cart sidebar |
+| Sparkle Effects | CSS/JS animations for the Suggested Products section |
 
 ---
 
 ## Things to Keep Simple (Academic Project)
 - No real image hosting needed — use a local `/public/images/` folder or placeholder images
-- No complex animations — subtle transitions are fine
+- No complex animations — subtle transitions are fine (exception: the Suggested Products sparkle effects are encouraged)
 - No real-time features (no websockets)
 - Static notices are okay for now (vet visits, birthdays can be hardcoded initially)
 - Mobile responsiveness is a bonus, not a requirement — desktop-first is fine
+- No real payment processing — food store checkout is simulated
+- The hero video can use a free stock cat video or a placeholder
 
 ---
 
 ## Notes for the Team
-- Either of you (the student or Sam) might be working on this — so always ask _"what's already built?"_ before generating full new components
+- Either of you (Shlok or Sam) might be working on this — so always ask _"what's already built?"_ before generating full new components
 - If a feature isn't in this prompt but makes sense, it can be added — this is a living document
-- Keep component files organized (e.g., `/components`, `/pages`, `/api`)
+- Keep files organized (e.g., `/css`, `/js`, `/pages`)
+- The Reset Data button on the home page is for dev convenience only — remove it (and the entire localStorage mock layer) when the real backend is connected
