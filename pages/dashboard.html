@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cats — Meowtopia 🐾</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+</head>
+<body>
+    <nav class="navbar" id="navbar"></nav>
+
+    <main>
+        <div class="dashboard-header" id="dashboard-header"></div>
+
+        <section class="section">
+            <div class="container">
+                <div id="dashboard-content"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Cat Detail Modal -->
+    <div class="modal-overlay" id="cat-modal">
+        <div class="modal" style="max-width: 600px; text-align: left;">
+            <div id="cat-modal-content"></div>
+            <button class="btn btn-outline btn-block mt-3" onclick="closeCatModal()">Close</button>
+        </div>
+    </div>
+
+    <footer class="footer" id="footer"></footer>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        renderNavbar('dashboard');
+
+        const user = getCurrentUser();
+        const header = document.getElementById('dashboard-header');
+        const content = document.getElementById('dashboard-content');
+
+        if (!user) {
+            header.innerHTML = '<h1>🔐 Login Required</h1><p>Please log in to access your dashboard</p>';
+            content.innerHTML = `
+                <div class="empty-state">
+                    <a href="login.html" class="btn btn-primary">Login Now</a>
+                </div>
+            `;
+        } else if (user.role === 'admin') {
+            header.innerHTML = '<h1>Hey Admin! 🛠️</h1><p>Head to the admin panel to manage the platform</p>';
+            content.innerHTML = `
+                <div class="empty-state">
+                    <a href="admin.html" class="btn btn-primary">Go to Admin Panel</a>
+                </div>
+            `;
+        } else {
+            const userAdoptions = getUserAdoptions(user.userid);
+            
+            if (userAdoptions.length === 0) {
+                header.innerHTML = `<h1>Welcome, ${user.full_name}! 🐱</h1><p>Your cat family starts here</p>`;
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-emoji">🐾</div>
+                        <h3>You haven't adopted any cats yet!</h3>
+                        <p>Browse our adorable cats and find your purrfect match.</p>
+                        <a href="cats.html" class="btn btn-primary mt-2">Browse Cats 🐱</a>
+                    </div>
+                `;
+            } else {
+                header.innerHTML = `
+                    <h1>Welcome back, ${user.full_name}! 🐱</h1>
+                    <p>Your babies miss you — here's your cat family</p>
+                `;
+
+                // My Cats Section
+                let catsHTML = '<div class="dashboard-section"><h2>🐱 My Cats</h2><div class="cat-grid">';
+                
+                userAdoptions.forEach(adoption => {
+                    const cat = getCatById(adoption.catid);
+                    if (!cat) return;
+                    const foodPrefs = getCatFoodPrefs(cat.catid);
+
+                    catsHTML += `
+                        <div class="owner-cat-card" onclick="openCatModal(${cat.catid}, ${adoption.adoptionid})">
+                            <div class="cat-card-image" style="background: ${cat.gradient};">
+                                ${getCatImageHTML(cat)}
+                                <span class="cat-card-badge" style="background: var(--rose);">${adoption.status}</span>
+                            </div>
+                            <div class="owner-cat-info">
+                                <div class="owner-cat-name">${adoption.cat_name_given}</div>
+                                <div class="owner-cat-breed">${cat.breed} · ${cat.cattitude}</div>
+                                <div class="food-suggestions">
+                                    ${foodPrefs.map(f => `<span class="food-chip">${f.name}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                catsHTML += '</div></div>';
+
+                // Notices Section (static/mock for now)
+                const firstCat = getCatById(userAdoptions[0].catid);
+                const firstName = userAdoptions[0].cat_name_given;
+
+                let noticesHTML = `
+                    <div class="dashboard-section">
+                        <h2>📋 Notices & Reminders</h2>
+                        <div class="notice-grid">
+                            <div class="notice-card vet">
+                                <div class="notice-icon">🩺</div>
+                                <div class="notice-text">
+                                    Vet visit reminder for ${firstName}
+                                    <span>Scheduled for next month — annual checkup</span>
+                                </div>
+                            </div>
+                            <div class="notice-card birthday">
+                                <div class="notice-icon">🎂</div>
+                                <div class="notice-text">
+                                    ${firstName}'s adoption anniversary is coming!
+                                    <span>Celebrate with some treats and extra cuddles</span>
+                                </div>
+                            </div>
+                            <div class="notice-card tip">
+                                <div class="notice-icon">💡</div>
+                                <div class="notice-text">
+                                    Cat care tip of the day
+                                    <span>Cats need 12-16 hours of sleep per day — let them nap!</span>
+                                </div>
+                            </div>
+                            <div class="notice-card vet">
+                                <div class="notice-icon">💉</div>
+                                <div class="notice-text">
+                                    Vaccination reminder
+                                    <span>Keep your cat's vaccinations up to date for a healthy life!</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                content.innerHTML = catsHTML + noticesHTML;
+            }
+        }
+
+        // Cat Detail Modal
+        function openCatModal(catid, adoptionid) {
+            const cat = getCatById(catid);
+            const adoption = getAdoptions().find(a => a.adoptionid === adoptionid);
+            const foodPrefs = getCatFoodPrefs(catid);
+
+            if (!cat || !adoption) return;
+
+            const modalContent = document.getElementById('cat-modal-content');
+            modalContent.innerHTML = `
+                <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px;">
+                    <div style="width: 120px; height: 120px; border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; background: ${cat.gradient};">
+                        ${getCatImageHTML(cat)}
+                    </div>
+                    <div>
+                        <h2 style="margin-bottom: 0;">${adoption.cat_name_given}</h2>
+                        <p style="color: var(--text-light);">${cat.breed} · ${cat.cattitude}</p>
+                        <span class="status-badge ${adoption.status.toLowerCase()}">${adoption.status}</span>
+                    </div>
+                </div>
+
+                <div class="detail-grid" style="margin-bottom: 20px;">
+                    <div class="detail-item">
+                        <div class="label">Age</div>
+                        <div class="value">${cat.age}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Gender</div>
+                        <div class="value">${cat.gender}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Fur Color</div>
+                        <div class="value">${cat.fur_color}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Health</div>
+                        <div class="value">${cat.health_status}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Adopted On</div>
+                        <div class="value">${formatDate(adoption.adoption_date)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Pickup Method</div>
+                        <div class="value">${adoption.pickup_method === 'pickup' ? '🏪 Store Pickup' : '🏠 Home Delivery'}</div>
+                    </div>
+                </div>
+
+                ${foodPrefs.length > 0 ? `
+                    <div style="background: var(--mint); border-radius: var(--radius-sm); padding: 16px;">
+                        <h4 style="margin-bottom: 8px;">🍽️ ${adoption.cat_name_given}'s Favorite Foods</h4>
+                        <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 8px;">Make sure to stock up on these!</p>
+                        <div class="food-suggestions">
+                            ${foodPrefs.map(f => `<span class="food-chip" style="background: var(--accent); color: #fff; padding: 6px 14px; font-size: 0.85rem;">${f.name} — ₹${f.price}</span>`).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            document.getElementById('cat-modal').classList.add('active');
+        }
+
+        function closeCatModal() {
+            document.getElementById('cat-modal').classList.remove('active');
+        }
+
+        document.getElementById('cat-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeCatModal();
+        });
+    </script>
+</body>
+</html>

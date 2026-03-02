@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — Meowtopia 🐾</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+</head>
+<body>
+    <nav class="navbar" id="navbar"></nav>
+
+    <div id="admin-check"></div>
+
+    <!-- Admin Layout -->
+    <div class="admin-layout" id="admin-layout" style="display: none;">
+        <aside class="admin-sidebar">
+            <a href="#" class="active" data-tab="cats" onclick="switchTab('cats', this)">
+                <span class="sidebar-icon">🐱</span> Manage Cats
+            </a>
+            <a href="#" data-tab="adoptions" onclick="switchTab('adoptions', this)">
+                <span class="sidebar-icon">📋</span> Adoptions
+            </a>
+            <a href="#" data-tab="food" onclick="switchTab('food', this)">
+                <span class="sidebar-icon">🍽️</span> Food Items
+            </a>
+            <a href="#" data-tab="add-cat" onclick="switchTab('add-cat', this)">
+                <span class="sidebar-icon">➕</span> Add New Cat
+            </a>
+            <a href="#" data-tab="add-food" onclick="switchTab('add-food', this)">
+                <span class="sidebar-icon">➕</span> Add Food Item
+            </a>
+        </aside>
+
+        <div class="admin-content">
+            <!-- Cats Tab -->
+            <div id="tab-cats" class="admin-tab">
+                <h2>🐱 Cat Management</h2>
+                <div id="cats-table-container"></div>
+            </div>
+
+            <!-- Adoptions Tab -->
+            <div id="tab-adoptions" class="admin-tab" style="display: none;">
+                <h2>📋 Adoption Requests</h2>
+                <div id="adoptions-table-container"></div>
+            </div>
+
+            <!-- Food Tab -->
+            <div id="tab-food" class="admin-tab" style="display: none;">
+                <h2>🍽️ Food Inventory</h2>
+                <div id="food-table-container"></div>
+            </div>
+
+            <!-- Add Cat Tab -->
+            <div id="tab-add-cat" class="admin-tab" style="display: none;">
+                <h2>➕ Add New Cat</h2>
+                <div style="max-width: 600px;">
+                    <div id="add-cat-alert"></div>
+                    <form id="add-cat-form" onsubmit="handleAddCat(event)" style="background: var(--card-bg); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow);">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Breed *</label>
+                                <input type="text" id="cat-breed" placeholder="e.g., Persian, Siamese" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Fur Color</label>
+                                <input type="text" id="cat-fur" placeholder="e.g., White, Tabby">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="text" id="cat-age" placeholder="e.g., 6 months, 2 years">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender *</label>
+                                <select id="cat-gender" required>
+                                    <option value="">Select gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Intake Date *</label>
+                                <input type="date" id="cat-intake" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Health Status</label>
+                                <select id="cat-health">
+                                    <option value="Healthy">Healthy</option>
+                                    <option value="Vaccinated">Vaccinated</option>
+                                    <option value="Under Treatment">Under Treatment</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Cattitude (Personality)</label>
+                            <input type="text" id="cat-cattitude" placeholder="e.g., Playful, Sassy, Chill">
+                        </div>
+                        <div class="form-group">
+                            <label>Photo URL (optional)</label>
+                            <input type="text" id="cat-photo" placeholder="https://example.com/cat.jpg">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Leave blank for auto-generated placeholder</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Food Preferences</label>
+                            <div id="food-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Add Cat 🐱</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add Food Tab -->
+            <div id="tab-add-food" class="admin-tab" style="display: none;">
+                <h2>➕ Add Food Item</h2>
+                <div style="max-width: 480px;">
+                    <div id="add-food-alert"></div>
+                    <form id="add-food-form" onsubmit="handleAddFood(event)" style="background: var(--card-bg); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow);">
+                        <div class="form-group">
+                            <label>Food Name *</label>
+                            <input type="text" id="food-name" placeholder="e.g., Tuna Bites, Cat Milk" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Quantity in Stock</label>
+                                <input type="number" id="food-qty" value="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Price (₹) *</label>
+                                <input type="number" id="food-price" placeholder="0.00" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Add Food Item 🍽️</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Cat Modal -->
+    <div class="modal-overlay" id="edit-cat-modal">
+        <div class="modal" style="max-width: 600px; text-align: left;">
+            <h3 style="margin-bottom: 20px;">Edit Cat Details</h3>
+            <div id="edit-cat-form-content"></div>
+        </div>
+    </div>
+
+    <footer class="footer" id="footer"></footer>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        renderNavbar('admin');
+
+        const user = getCurrentUser();
+        const adminCheck = document.getElementById('admin-check');
+        const adminLayout = document.getElementById('admin-layout');
+
+        if (!user || user.role !== 'admin') {
+            adminCheck.innerHTML = `
+                <div class="form-page">
+                    <div class="empty-state">
+                        <div class="empty-emoji">🔐</div>
+                        <h3>Admin Access Only</h3>
+                        <p>You need to be logged in as an admin to access this panel.</p>
+                        <a href="login.html" class="btn btn-primary mt-2">Login as Admin</a>
+                    </div>
+                </div>
+            `;
+        } else {
+            adminLayout.style.display = 'grid';
+            loadCatsTable();
+            loadAdoptionsTable();
+            loadFoodTable();
+            loadFoodCheckboxes();
+        }
+
+        // Tab switching
+        function switchTab(tabName, el) {
+            event.preventDefault();
+            document.querySelectorAll('.admin-tab').forEach(t => t.style.display = 'none');
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            document.querySelectorAll('.admin-sidebar a').forEach(a => a.classList.remove('active'));
+            el.classList.add('active');
+
+            // Refresh tables on switch
+            if (tabName === 'cats') loadCatsTable();
+            if (tabName === 'adoptions') loadAdoptionsTable();
+            if (tabName === 'food') loadFoodTable();
+        }
+
+        // ===== Cats Table =====
+        function loadCatsTable() {
+            const cats = getCats();
+            const container = document.getElementById('cats-table-container');
+
+            if (cats.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-emoji">🐱</div><h3>No cats yet</h3></div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Breed</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Cattitude</th>
+                            <th>Health</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${cats.map(cat => `
+                            <tr>
+                                <td>#${cat.catid}</td>
+                                <td><strong>${cat.breed}</strong></td>
+                                <td>${cat.age}</td>
+                                <td>${cat.gender}</td>
+                                <td>${cat.cattitude || '—'}</td>
+                                <td>${cat.health_status}</td>
+                                <td>
+                                    <span class="status-badge ${cat.is_available ? 'available' : 'adopted'}">
+                                        ${cat.is_available ? 'Available' : 'Adopted'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-sm btn-accent" onclick="editCat(${cat.catid})">Edit</button>
+                                        <button class="btn btn-sm btn-danger" onclick="handleDeleteCat(${cat.catid})">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // ===== Adoptions Table =====
+        function loadAdoptionsTable() {
+            const adoptions = getAdoptions();
+            const container = document.getElementById('adoptions-table-container');
+
+            if (adoptions.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-emoji">📋</div><h3>No adoption requests yet</h3></div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Cat Given Name</th>
+                            <th>Breed</th>
+                            <th>Pickup</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${adoptions.map(a => {
+                            const adopter = getUserById(a.userid);
+                            const cat = getCatById(a.catid);
+                            return `
+                                <tr>
+                                    <td>#${a.adoptionid}</td>
+                                    <td>${adopter ? adopter.full_name : 'Unknown'}</td>
+                                    <td><strong>${a.cat_name_given}</strong></td>
+                                    <td>${cat ? cat.breed : 'Unknown'}</td>
+                                    <td>${a.pickup_method === 'pickup' ? '🏪 Pickup' : '🏠 Delivery'}</td>
+                                    <td>${formatDate(a.adoption_date)}</td>
+                                    <td><span class="status-badge ${a.status.toLowerCase()}">${a.status}</span></td>
+                                    <td>
+                                        <div class="action-btns">
+                                            ${a.status === 'Pending' ? `
+                                                <button class="btn btn-sm btn-success" onclick="changeAdoptionStatus(${a.adoptionid}, 'Approved')">Approve</button>
+                                            ` : ''}
+                                            ${a.status === 'Approved' ? `
+                                                <button class="btn btn-sm btn-primary" onclick="changeAdoptionStatus(${a.adoptionid}, 'Completed')">Complete</button>
+                                            ` : ''}
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // ===== Food Table =====
+        function loadFoodTable() {
+            const foods = getFood();
+            const container = document.getElementById('food-table-container');
+
+            if (foods.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-emoji">🍽️</div><h3>No food items yet</h3></div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Price (₹)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${foods.map(f => `
+                            <tr>
+                                <td>#${f.foodid}</td>
+                                <td><strong>${f.name}</strong></td>
+                                <td>${f.qty}</td>
+                                <td>₹${f.price.toFixed(2)}</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn btn-sm btn-danger" onclick="handleDeleteFood(${f.foodid})">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // ===== Food Checkboxes for Add Cat =====
+        function loadFoodCheckboxes() {
+            const foods = getFood();
+            const container = document.getElementById('food-checkboxes');
+            container.innerHTML = foods.map(f => `
+                <label style="display: flex; align-items: center; gap: 6px; background: var(--bg); padding: 6px 12px; border-radius: 16px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                    <input type="checkbox" value="${f.foodid}" name="food_prefs"> ${f.name}
+                </label>
+            `).join('');
+        }
+
+        // ===== Handlers =====
+        const gradients = [
+            "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+            "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
+            "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
+            "linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%)",
+            "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
+            "linear-gradient(135deg, #fceabb 0%, #f8b500 100%)",
+            "linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)",
+            "linear-gradient(135deg, #c1c1c1 0%, #e8e8e8 100%)"
+        ];
+
+        function handleAddCat(e) {
+            e.preventDefault();
+            const alert = document.getElementById('add-cat-alert');
+
+            const selectedFoods = [...document.querySelectorAll('input[name="food_prefs"]:checked')].map(cb => parseInt(cb.value));
+
+            const newCat = addCat({
+                name: null,
+                breed: document.getElementById('cat-breed').value.trim(),
+                fur_color: document.getElementById('cat-fur').value.trim() || 'Unknown',
+                age: document.getElementById('cat-age').value.trim() || 'Unknown',
+                gender: document.getElementById('cat-gender').value,
+                intake_date: document.getElementById('cat-intake').value,
+                health_status: document.getElementById('cat-health').value,
+                cattitude: document.getElementById('cat-cattitude').value.trim() || 'Friendly',
+                photo_url: document.getElementById('cat-photo').value.trim() || '',
+                gradient: gradients[Math.floor(Math.random() * gradients.length)]
+            });
+
+            if (selectedFoods.length > 0) {
+                setCatFoodPrefs(newCat.catid, selectedFoods);
+            }
+
+            alert.innerHTML = `<div class="alert alert-success">Cat added successfully! (ID: #${newCat.catid}) 🐱</div>`;
+            document.getElementById('add-cat-form').reset();
+            loadCatsTable();
+        }
+
+        function handleAddFood(e) {
+            e.preventDefault();
+            const alert = document.getElementById('add-food-alert');
+
+            const newFood = addFood({
+                name: document.getElementById('food-name').value.trim(),
+                qty: parseInt(document.getElementById('food-qty').value) || 0,
+                price: parseFloat(document.getElementById('food-price').value) || 0
+            });
+
+            alert.innerHTML = `<div class="alert alert-success">Food item added! (ID: #${newFood.foodid}) 🍽️</div>`;
+            document.getElementById('add-food-form').reset();
+            loadFoodTable();
+            loadFoodCheckboxes();
+        }
+
+        function handleDeleteCat(catid) {
+            if (confirm('Are you sure you want to delete this cat?')) {
+                deleteCat(catid);
+                loadCatsTable();
+            }
+        }
+
+        function handleDeleteFood(foodid) {
+            if (confirm('Are you sure you want to delete this food item?')) {
+                deleteFood(foodid);
+                loadFoodTable();
+                loadFoodCheckboxes();
+            }
+        }
+
+        function changeAdoptionStatus(adoptionid, status) {
+            updateAdoptionStatus(adoptionid, status);
+            loadAdoptionsTable();
+        }
+
+        function editCat(catid) {
+            const cat = getCatById(catid);
+            if (!cat) return;
+
+            const modalContent = document.getElementById('edit-cat-form-content');
+            modalContent.innerHTML = `
+                <form onsubmit="saveEditCat(event, ${catid})">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Breed</label>
+                            <input type="text" id="edit-breed" value="${cat.breed}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fur Color</label>
+                            <input type="text" id="edit-fur" value="${cat.fur_color || ''}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="text" id="edit-age" value="${cat.age || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select id="edit-gender">
+                                <option value="Male" ${cat.gender === 'Male' ? 'selected' : ''}>Male</option>
+                                <option value="Female" ${cat.gender === 'Female' ? 'selected' : ''}>Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Health Status</label>
+                            <select id="edit-health">
+                                <option value="Healthy" ${cat.health_status === 'Healthy' ? 'selected' : ''}>Healthy</option>
+                                <option value="Vaccinated" ${cat.health_status === 'Vaccinated' ? 'selected' : ''}>Vaccinated</option>
+                                <option value="Under Treatment" ${cat.health_status === 'Under Treatment' ? 'selected' : ''}>Under Treatment</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cattitude</label>
+                            <input type="text" id="edit-cattitude" value="${cat.cattitude || ''}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Availability</label>
+                        <select id="edit-available">
+                            <option value="true" ${cat.is_available ? 'selected' : ''}>Available</option>
+                            <option value="false" ${!cat.is_available ? 'selected' : ''}>Adopted / Unavailable</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">Save Changes</button>
+                        <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('edit-cat-modal').classList.add('active');
+        }
+
+        function saveEditCat(e, catid) {
+            e.preventDefault();
+            updateCat(catid, {
+                breed: document.getElementById('edit-breed').value.trim(),
+                fur_color: document.getElementById('edit-fur').value.trim(),
+                age: document.getElementById('edit-age').value.trim(),
+                gender: document.getElementById('edit-gender').value,
+                health_status: document.getElementById('edit-health').value,
+                cattitude: document.getElementById('edit-cattitude').value.trim(),
+                is_available: document.getElementById('edit-available').value === 'true'
+            });
+            closeEditModal();
+            loadCatsTable();
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-cat-modal').classList.remove('active');
+        }
+
+        document.getElementById('edit-cat-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+    </script>
+</body>
+</html>
