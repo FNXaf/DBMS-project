@@ -1,8 +1,9 @@
 // ===== Meowtopia — Common App Logic =====
 // Handles navbar rendering, image fallback, utility functions
 
-// ===== Determine base path (pages are one level deep) =====
-const isSubPage = window.location.pathname.includes('/pages/');
+// ===== Determine base path (pages are one level deep in frontend/) =====
+// Check if we're in a subdirectory by seeing if 'pages' is in the pathname
+const isSubPage = window.location.pathname.includes('/pages/') || window.location.pathname.includes('\\pages\\');
 const BASE = isSubPage ? '../' : './';
 
 // ===== Render Navbar =====
