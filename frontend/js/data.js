@@ -177,6 +177,30 @@ function formatAge(dob) {
     return years + ' yr' + (years !== 1 ? 's' : '') + ', ' + rem + ' mo';
 }
 
+// ===== Fur-Color → Gradient (for image placeholders) =====
+function furColorGradient(furColor) {
+    const lc = (furColor || '').toLowerCase();
+    const map = [
+        ['white',   'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)'],
+        ['black',   'linear-gradient(135deg, #434343 0%, #1a1a2e 100%)'],
+        ['orange',  'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)'],
+        ['ginger',  'linear-gradient(135deg, #fceabb 0%, #f8b500 100%)'],
+        ['gray',    'linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%)'],
+        ['tabby',   'linear-gradient(135deg, #c68642 0%, #d4a574 100%)'],
+        ['cream',   'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'],
+        ['brown',   'linear-gradient(135deg, #8B6914 0%, #c68642 100%)'],
+        ['spotted', 'linear-gradient(135deg, #f5af19 0%, #d4a574 100%)'],
+        ['tawny',   'linear-gradient(135deg, #d4a574 0%, #c68642 100%)'],
+        ['silver',  'linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)'],
+        ['blue',    'linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)'],
+        ['pink',    'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)'],
+    ];
+    for (const [key, grad] of map) {
+        if (lc.includes(key)) return grad;
+    }
+    return 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)';
+}
+
 // ===== Cat CRUD =====
 function getCats() {
     return JSON.parse(localStorage.getItem('meowtopia_cats')) || [];

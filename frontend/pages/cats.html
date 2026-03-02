@@ -15,57 +15,97 @@
         <h1 class="section-title">Browse Our Cats 🐱</h1>
 
         <div class="browse-layout">
-            <!-- Mobile filter toggle -->
+            <!-- Filter toggle — always visible -->
             <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">☰ Filters</button>
             <div class="filter-overlay" id="filter-overlay" onclick="toggleFilterSidebar()"></div>
 
-            <!-- FILTER SIDEBAR -->
+            <!-- FILTER SIDEBAR (popup from left) -->
             <aside class="filter-sidebar" id="filter-sidebar">
-                <h3>Filters <button onclick="clearAllFilters()">Clear All</button></h3>
-
-                <!-- Gender (single-toggle) -->
-                <div class="filter-group">
-                    <label>Gender</label>
-                    <div class="toggle-group" id="fg-gender">
-                        <button class="toggle-btn" data-val="Male" onclick="toggleSingle(this)">♂ Male</button>
-                        <button class="toggle-btn" data-val="Female" onclick="toggleSingle(this)">♀ Female</button>
+                <div class="filter-sidebar-header">
+                    <h3>Filters</h3>
+                    <div>
+                        <button class="filter-clear-btn" onclick="clearAllFilters()">Clear All</button>
+                        <button class="filter-close" onclick="toggleFilterSidebar()">✕</button>
                     </div>
                 </div>
 
-                <!-- Fur Color (multi-select) -->
+                <!-- Gender — always visible -->
                 <div class="filter-group">
-                    <label>Fur Color</label>
-                    <div class="chip-group" id="fg-fur"></div>
-                </div>
-
-                <!-- Breed (multi-select) -->
-                <div class="filter-group">
-                    <label>Breed</label>
-                    <div class="chip-group" id="fg-breed"></div>
-                </div>
-
-                <!-- Age Range (min-max in months) -->
-                <div class="filter-group">
-                    <label>Age (months)</label>
-                    <div class="range-inputs">
-                        <input type="number" id="age-min" min="0" max="240" value="0" placeholder="Min" onchange="applyFilters()">
-                        <span>–</span>
-                        <input type="number" id="age-max" min="0" max="240" value="240" placeholder="Max" onchange="applyFilters()">
+                    <div class="filter-group-header" style="cursor:default">
+                        <label>Gender</label>
+                    </div>
+                    <div class="filter-group-body always-open">
+                        <div class="toggle-group" id="fg-gender">
+                            <button class="toggle-btn" data-val="Male" onclick="toggleSingle(this)">♂ Male</button>
+                            <button class="toggle-btn" data-val="Female" onclick="toggleSingle(this)">♀ Female</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Cattitude (multi-select) -->
+                <!-- Age — always visible, dual-range slider -->
                 <div class="filter-group">
-                    <label>Cattitude</label>
-                    <div class="chip-group" id="fg-cattitude"></div>
+                    <div class="filter-group-header" style="cursor:default">
+                        <label>Age</label>
+                    </div>
+                    <div class="filter-group-body always-open">
+                        <div class="dual-range" id="age-range">
+                            <div class="dual-range-track">
+                                <div class="dual-range-fill" id="age-fill"></div>
+                            </div>
+                            <input type="range" id="age-min" min="0" max="240" value="0" oninput="syncAgeSlider()">
+                            <input type="range" id="age-max" min="0" max="240" value="240" oninput="syncAgeSlider()">
+                            <div class="dual-range-labels">
+                                <span id="age-min-label">0 mo</span>
+                                <span id="age-max-label">240 mo</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Health Status (single-toggle) -->
+                <!-- Fur Color — collapsible accordion -->
                 <div class="filter-group">
-                    <label>Health</label>
-                    <div class="toggle-group" id="fg-health">
-                        <button class="toggle-btn" data-val="Healthy" onclick="toggleSingle(this)">✅ Healthy</button>
-                        <button class="toggle-btn" data-val="Needs Care" onclick="toggleSingle(this)">🩺 Needs Care</button>
+                    <div class="filter-group-header" onclick="toggleAccordion(this)">
+                        <label>Fur Color</label>
+                        <span class="chevron">▸</span>
+                    </div>
+                    <div class="filter-group-body" id="fg-fur-wrap">
+                        <div class="chip-group" id="fg-fur"></div>
+                    </div>
+                </div>
+
+                <!-- Breed — collapsible accordion -->
+                <div class="filter-group">
+                    <div class="filter-group-header" onclick="toggleAccordion(this)">
+                        <label>Breed</label>
+                        <span class="chevron">▸</span>
+                    </div>
+                    <div class="filter-group-body" id="fg-breed-wrap">
+                        <div class="chip-group" id="fg-breed"></div>
+                    </div>
+                </div>
+
+                <!-- Cattitude — collapsible accordion -->
+                <div class="filter-group">
+                    <div class="filter-group-header" onclick="toggleAccordion(this)">
+                        <label>Cattitude</label>
+                        <span class="chevron">▸</span>
+                    </div>
+                    <div class="filter-group-body" id="fg-cattitude-wrap">
+                        <div class="chip-group" id="fg-cattitude"></div>
+                    </div>
+                </div>
+
+                <!-- Health — collapsible accordion -->
+                <div class="filter-group">
+                    <div class="filter-group-header" onclick="toggleAccordion(this)">
+                        <label>Health</label>
+                        <span class="chevron">▸</span>
+                    </div>
+                    <div class="filter-group-body" id="fg-health-wrap">
+                        <div class="toggle-group" id="fg-health">
+                            <button class="toggle-btn" data-val="Healthy" onclick="toggleSingle(this)">✅ Healthy</button>
+                            <button class="toggle-btn" data-val="Needs Care" onclick="toggleSingle(this)">🩺 Needs Care</button>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -136,17 +176,43 @@
             return a ? a.dataset.val : '';
         }
 
-        /* ---- Mobile sidebar toggle ---- */
+        /* ---- Sidebar popup toggle ---- */
         function toggleFilterSidebar() {
             document.getElementById('filter-sidebar').classList.toggle('open');
             document.getElementById('filter-overlay').classList.toggle('show');
         }
+
+        /* ---- Accordion toggle ---- */
+        function toggleAccordion(headerEl) {
+            const body = headerEl.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            headerEl.classList.toggle('expanded', !isOpen);
+            body.classList.toggle('open', !isOpen);
+        }
+
+        /* ---- Dual-range age slider sync ---- */
+        function syncAgeSlider() {
+            const minEl = document.getElementById('age-min');
+            const maxEl = document.getElementById('age-max');
+            let minV = parseInt(minEl.value);
+            let maxV = parseInt(maxEl.value);
+            if (minV > maxV) { [minV, maxV] = [maxV, minV]; minEl.value = minV; maxEl.value = maxV; }
+            const pct = v => (v / 240) * 100;
+            document.getElementById('age-fill').style.left = pct(minV) + '%';
+            document.getElementById('age-fill').style.width = pct(maxV - minV) + '%';
+            const label = v => v < 12 ? v + ' mo' : Math.floor(v / 12) + ' yr' + (v % 12 ? ' ' + (v % 12) + 'mo' : '');
+            document.getElementById('age-min-label').textContent = label(minV);
+            document.getElementById('age-max-label').textContent = label(maxV);
+            applyFilters();
+        }
+        syncAgeSlider(); // init fill bar
 
         /* ---- Clear All ---- */
         function clearAllFilters() {
             document.querySelectorAll('.toggle-btn.active, .chip.active').forEach(b => b.classList.remove('active'));
             document.getElementById('age-min').value = 0;
             document.getElementById('age-max').value = 240;
+            syncAgeSlider();
             applyFilters();
         }
 
@@ -169,18 +235,23 @@
             // Age range (months)
             const ageMin = parseInt(document.getElementById('age-min').value) || 0;
             const ageMax = parseInt(document.getElementById('age-max').value) || 240;
+            const [lo, hi] = ageMin <= ageMax ? [ageMin, ageMax] : [ageMax, ageMin];
             cats = cats.filter(c => {
                 const m = getAgeMonths(c.dob);
-                return m >= ageMin && m <= ageMax;
+                return m >= lo && m <= hi;
             });
 
             // Cattitude
             const catts = getActiveVals('fg-cattitude');
             if (catts.length) cats = cats.filter(c => catts.includes(c.cattitude));
 
-            // Health
+            // Health — map actual statuses to filter categories
             const health = getSingleVal('fg-health');
-            if (health) cats = cats.filter(c => c.health_status === health);
+            if (health === 'Healthy') {
+                cats = cats.filter(c => c.health_status === 'Healthy' || c.health_status === 'Vaccinated');
+            } else if (health === 'Needs Care') {
+                cats = cats.filter(c => c.health_status === 'Under Treatment');
+            }
 
             // Sort
             const sort = document.getElementById('sort-by').value;
@@ -188,15 +259,12 @@
                 switch(sort) {
                     case 'name-asc': return (a.shelter_name || '').localeCompare(b.shelter_name || '');
                     case 'name-desc': return (b.shelter_name || '').localeCompare(a.shelter_name || '');
-                    case 'age-asc': return getAgeMonths(b.dob) - getAgeMonths(a.dob); // youngest = most recent DOB = fewer months? No: youngest = smallest age months
-                    case 'age-desc': return getAgeMonths(a.dob) - getAgeMonths(b.dob);
+                    case 'age-asc': return getAgeMonths(a.dob) - getAgeMonths(b.dob);
+                    case 'age-desc': return getAgeMonths(b.dob) - getAgeMonths(a.dob);
                     case 'breed-asc': return a.breed.localeCompare(b.breed);
                     default: return 0;
                 }
             });
-            // Fix: youngest = smallest getAgeMonths
-            if (sort === 'age-asc') cats.sort((a,b) => getAgeMonths(a.dob) - getAgeMonths(b.dob));
-            if (sort === 'age-desc') cats.sort((a,b) => getAgeMonths(b.dob) - getAgeMonths(a.dob));
 
             renderCats(cats);
         }

@@ -56,7 +56,6 @@ function renderFooter() {
     footer.innerHTML = `
         <div class="footer-brand">🐾 Meowtopia</div>
         <p>Find your purrfect companion — one meow at a time.</p>
-        <p style="margin-top: 8px; font-size: 0.8rem;">Made with ❤️ as a DBMS Academic Project © 2025</p>
     `;
 }
 
@@ -68,10 +67,11 @@ function handleLogout() {
 
 // ===== Cat Image Helper =====
 function getCatImageHTML(cat) {
+    const grad = furColorGradient(cat.fur_color);
     return `
         <img src="${cat.photo_url}"
              alt="${cat.shelter_name || cat.breed}"
-             onerror="this.parentElement.innerHTML='<div class=\\'cat-img-placeholder\\' style=\\'background: ${cat.gradient}\\'><span>🐱</span><span class=\\'breed-label\\'>${cat.breed}</span></div>'"
+             onerror="this.parentElement.innerHTML='<div class=\\'cat-img-placeholder\\' style=\\'background: ${grad}\\'><span>🐱</span><span class=\\'breed-label\\'>${cat.breed}</span></div>'"
              style="width: 100%; height: 100%; object-fit: cover;">
     `;
 }
@@ -86,7 +86,7 @@ function createCatCard(cat, linkBase) {
 
     return `
         <div class="cat-card" onclick="window.location.href='${linkBase}pages/cat-detail.html?id=${cat.catid}'">
-            <div class="cat-card-image" style="background: ${cat.gradient};">
+            <div class="cat-card-image" style="background: ${furColorGradient(cat.fur_color)};">
                 ${getCatImageHTML(cat)}
                 ${badge}
             </div>

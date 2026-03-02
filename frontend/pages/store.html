@@ -19,7 +19,7 @@
 
         <!-- Suggested Products Bar -->
         <div class="suggested-bar" id="suggested-bar" style="display:none">
-            <h2>Recommended for your cats ✨</h2>
+            <h2 id="suggested-heading">Recommended for your cats ✨</h2>
             <div class="suggested-products" id="suggested-products"></div>
         </div>
 
@@ -84,7 +84,21 @@
             const suggested = getSuggestedFoods(userid);
             if (suggested.length === 0) return;
 
+            // Build heading with cat names (up to 3)
+            const adoptions = getUserAdoptions(userid).filter(a => ['Pending','Approved','Completed'].includes(a.status));
+            const catNames = [...new Set(adoptions.map(a => {
+                const cat = getCatById(a.catid);
+                return cat ? cat.shelter_name : null;
+            }).filter(Boolean))];
+            let nameLabel;
+            if (catNames.length === 0) nameLabel = 'your cats';
+            else if (catNames.length === 1) nameLabel = catNames[0];
+            else if (catNames.length === 2) nameLabel = catNames[0] + ' & ' + catNames[1];
+            else if (catNames.length === 3) nameLabel = catNames[0] + ', ' + catNames[1] + ' & ' + catNames[2];
+            else nameLabel = 'your cats';
+
             document.getElementById('suggested-bar').style.display = '';
+            document.getElementById('suggested-heading').innerHTML = `Recommended for ${nameLabel} ✨`;
             const container = document.getElementById('suggested-products');
             container.innerHTML = suggested.map(f => `
                 <div class="sparkle-card product-card" style="min-width:200px;max-width:220px">
