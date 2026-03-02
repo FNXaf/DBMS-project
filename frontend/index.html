@@ -4,84 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meowtopia — Find Your Purrfect Companion 🐾</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
-<body>
+<body class="home-page">
     <nav class="navbar" id="navbar"></nav>
 
     <main>
-        <!-- Hero Section — video background -->
+        <!-- Hero — Sequential Video Carousel (full-width, looping) -->
         <section class="hero">
-            <!--
-                Replace the src below with your own cat/adoption video.
-                Using a free stock video placeholder for now.
-            -->
-            <video class="hero-video" autoplay muted loop playsinline
-                   poster="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=1200&q=80">
-                <source src="https://cdn.pixabay.com/video/2020/07/30/45362-445830244_large.mp4" type="video/mp4">
-            </video>
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-                <h1>Find your purrfect companion 🐱</h1>
-                <p>Welcome to Meowtopia — where every cat finds a loving home and every human finds their perfect match.</p>
-                <a href="pages/cats.html" class="btn">Browse Cats 🐾</a>
+            <div class="hero-video-wrap" id="hero-video-wrap">
+                <video class="hero-video active" muted playsinline preload="auto"
+                       src="assets/videos/vid1.mp4"></video>
+                <video class="hero-video" muted playsinline preload="auto"
+                       src="assets/videos/vid2.mp4"></video>
+                <video class="hero-video" muted playsinline preload="auto"
+                       src="assets/videos/vid3.mp4"></video>
+                <video class="hero-video" muted playsinline preload="auto"
+                       src="assets/videos/vid4.mp4"></video>
+                <video class="hero-video" muted playsinline preload="auto"
+                       src="assets/videos/vid5.mp4"></video>
+                <video class="hero-video" muted playsinline preload="auto"
+                       src="assets/videos/vid6.mp4"></video>
             </div>
+            <div class="hero-overlay"></div>
+            <div class="hero-content elegant">
+                <h1 class="elegant-heading">Meowtopia</h1>
+                <p class="elegant-tagline">Where every whisker finds a home</p>
+                <a href="pages/cats.html" class="btn hero-btn">Meet Our Cats</a>
+            </div>
+            <!-- thin progress bar across bottom of hero -->
+            <div class="hero-progress"><div class="hero-progress-bar" id="hero-progress-bar"></div></div>
         </section>
 
-        <!-- Featured Cats -->
-        <section class="section">
-            <h2 class="section-title">Meet Our Adorable Residents 🏠</h2>
-            <div class="cats-grid" id="featured-cats"></div>
-            <div class="text-center mt-3">
-                <a href="pages/cats.html" class="btn-outline" style="display:inline-block;padding:.7rem 1.6rem;border-radius:8px">View All Cats →</a>
+        <!-- About Meowtopia -->
+        <section class="section home-about">
+            <h2 class="elegant-section-title">Our Story</h2>
+            <div class="about-grid">
+                <div class="about-text">
+                    <p>
+                        Nestled in the quiet outskirts of the city, <strong>Meowtopia</strong> began as a humble dream in 2018 — 
+                        a small cottage with three rescued kittens and one determined founder who believed every cat 
+                        deserves a second chance at love.
+                    </p>
+                    <p>
+                        What started as weekend fostering quickly blossomed into a full sanctuary. Today, Meowtopia 
+                        is home to over a hundred cats of every breed, colour, and personality — each one waiting for 
+                        the right human to walk through our doors.
+                    </p>
+                    <p>
+                        We don't just rehome cats. We match souls. Our adoption counsellors spend time getting to know 
+                        both you and our residents, ensuring every pairing is as natural as a cat choosing the warmest 
+                        spot on the sofa.
+                    </p>
+                </div>
+                <div class="about-text">
+                    <p>
+                        Our on-site veterinary clinic provides full health checks, vaccinations, and spay/neuter 
+                        procedures before any adoption — because a healthy cat is a happy cat. Every feline that 
+                        leaves Meowtopia is microchipped, dewormed, and loved.
+                    </p>
+                    <p>
+                        Beyond adoption, our <em>Meowtopia Market</em> offers a curated selection of premium cat 
+                        food, treats, and essentials — personalised to your cat's breed, age, and dietary needs. 
+                        Think of it as a boutique for the discerning cat parent.
+                    </p>
+                    <p>
+                        Whether you're here to adopt your first companion, shop for your fur family, or simply 
+                        lose yourself in the gentle purring of a hundred happy cats — welcome to Meowtopia. 
+                        <em>We've been expecting you.</em>
+                    </p>
+                </div>
             </div>
         </section>
 
         <!-- How It Works -->
-        <section class="section" style="background:linear-gradient(135deg,#f1f0ff,#fff5f7);border-radius:16px;margin:2rem auto;max-width:1200px">
-            <h2 class="section-title">How Adoption Works 💕</h2>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.4rem;margin-top:1.2rem">
-                <div style="background:var(--surface);border-radius:var(--radius);padding:2rem;text-align:center;box-shadow:var(--shadow)">
-                    <div style="font-size:2.8rem;margin-bottom:.6rem">🔍</div>
-                    <h3>1. Browse &amp; Choose</h3>
-                    <p style="color:var(--text-light);font-size:.92rem;margin-top:.4rem">Explore our selection of adorable cats and find the one that steals your heart.</p>
+        <section class="section home-how-it-works">
+            <h2 class="elegant-section-title">How Adoption Works</h2>
+            <div class="hiw-grid">
+                <div class="hiw-card">
+                    <div class="hiw-icon">🔍</div>
+                    <h3>Browse &amp; Choose</h3>
+                    <p>Explore our selection of adorable cats and find the one that steals your heart.</p>
                 </div>
-                <div style="background:var(--surface);border-radius:var(--radius);padding:2rem;text-align:center;box-shadow:var(--shadow)">
-                    <div style="font-size:2.8rem;margin-bottom:.6rem">📝</div>
-                    <h3>2. Fill the Form</h3>
-                    <p style="color:var(--text-light);font-size:.92rem;margin-top:.4rem">Give your new fur baby a name and choose how you'd like to pick them up.</p>
+                <div class="hiw-card">
+                    <div class="hiw-icon">📝</div>
+                    <h3>Fill the Form</h3>
+                    <p>Give your new fur baby a name and choose how you'd like to pick them up.</p>
                 </div>
-                <div style="background:var(--surface);border-radius:var(--radius);padding:2rem;text-align:center;box-shadow:var(--shadow)">
-                    <div style="font-size:2.8rem;margin-bottom:.6rem">🏡</div>
-                    <h3>3. Welcome Home!</h3>
-                    <p style="color:var(--text-light);font-size:.92rem;margin-top:.4rem">Pick up your cat or get them delivered — and start your life as a cat parent!</p>
+                <div class="hiw-card">
+                    <div class="hiw-icon">🏡</div>
+                    <h3>Welcome Home!</h3>
+                    <p>Pick up your cat or get them delivered — and start your life as a cat parent!</p>
                 </div>
             </div>
         </section>
 
         <!-- Stats -->
-        <section class="section text-center">
-            <h2 class="section-title">Meowtopia in Numbers 📊</h2>
-            <div style="display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;margin-top:1.2rem">
-                <div>
-                    <div style="font-size:2.5rem;font-weight:900;color:var(--primary)" id="stat-cats">0</div>
-                    <div style="color:var(--text-light);font-weight:600">Cats Available</div>
+        <section class="section home-stats">
+            <h2 class="elegant-section-title">Meowtopia in Numbers</h2>
+            <div class="stats-row">
+                <div class="stat-block">
+                    <div class="stat-number" id="stat-cats">0</div>
+                    <div class="stat-label">Cats Available</div>
                 </div>
-                <div>
-                    <div style="font-size:2.5rem;font-weight:900;color:var(--accent)" id="stat-adopted">0</div>
-                    <div style="color:var(--text-light);font-weight:600">Happy Adoptions</div>
+                <div class="stat-block">
+                    <div class="stat-number accent" id="stat-adopted">0</div>
+                    <div class="stat-label">Happy Adoptions</div>
                 </div>
-                <div>
-                    <div style="font-size:2.5rem;font-weight:900;color:var(--primary-dark)" id="stat-breeds">0</div>
-                    <div style="color:var(--text-light);font-weight:600">Breeds</div>
+                <div class="stat-block">
+                    <div class="stat-number dark" id="stat-breeds">0</div>
+                    <div class="stat-label">Breeds</div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Reset Data Button (remove this section before production) -->
+    <!-- Reset Data Button -->
     <div class="reset-section">
         <button class="reset-btn" onclick="if(confirm('Reset ALL Meowtopia data to defaults?')){resetAllData();location.reload()}">
             🗑️ Reset Demo Data
@@ -95,18 +135,54 @@
     <script>
         renderNavbar('home');
 
-        // Featured cats — up to 6 random available
+        /* ---- Stats ---- */
         const available = getAvailableCats();
-        const shuffled = available.sort(() => 0.5 - Math.random()).slice(0, 6);
-        document.getElementById('featured-cats').innerHTML = shuffled.map(c => createCatCard(c, '')).join('');
-
-        // Stats
-        const allCats = getCats();
+        const allCats   = getCats();
         const adoptions = getAdoptions();
-        const breeds = [...new Set(allCats.map(c => c.breed))];
-        document.getElementById('stat-cats').textContent = available.length;
+        const breeds    = [...new Set(allCats.map(c => c.breed))];
+        document.getElementById('stat-cats').textContent    = available.length;
         document.getElementById('stat-adopted').textContent = adoptions.length;
-        document.getElementById('stat-breeds').textContent = breeds.length;
+        document.getElementById('stat-breeds').textContent  = breeds.length;
+
+        /* ---- Sequential Video Carousel ---- */
+        (function() {
+            const videos  = Array.from(document.querySelectorAll('.hero-video'));
+            const bar     = document.getElementById('hero-progress-bar');
+            let current   = 0;
+            let rafId     = null;
+
+            function showVideo(index) {
+                videos.forEach((v, i) => {
+                    v.classList.remove('active');
+                    if (i !== index) { v.pause(); v.currentTime = 0; }
+                });
+                videos[index].classList.add('active');
+                videos[index].currentTime = 0;
+                videos[index].play().catch(() => {});
+                animateBar(videos[index]);
+            }
+
+            function animateBar(vid) {
+                if (rafId) cancelAnimationFrame(rafId);
+                function tick() {
+                    if (vid.duration) {
+                        bar.style.width = ((vid.currentTime / vid.duration) * 100) + '%';
+                    }
+                    rafId = requestAnimationFrame(tick);
+                }
+                tick();
+            }
+
+            videos.forEach((v, i) => {
+                v.addEventListener('ended', () => {
+                    current = (i + 1) % videos.length;
+                    showVideo(current);
+                });
+            });
+
+            /* kick off the first video */
+            showVideo(0);
+        })();
     </script>
 </body>
 </html>
