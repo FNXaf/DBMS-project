@@ -106,11 +106,11 @@ const MOCK_CATS = [
 ];
 
 const MOCK_FOOD = [
-    { foodid: 1, name: "Cat Milk", qty: 50, price: 120.00 },
-    { foodid: 2, name: "Tuna Bites", qty: 30, price: 85.00 },
-    { foodid: 3, name: "Dry Kibble", qty: 100, price: 200.00 },
-    { foodid: 4, name: "Salmon Treats", qty: 40, price: 150.00 },
-    { foodid: 5, name: "Chicken Pâté", qty: 25, price: 95.00 }
+    { foodid: 1, name: "Cat Milk", qty: 50, price: 120.00, image_url: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=300&h=300&fit=crop", emoji: "🥛" },
+    { foodid: 2, name: "Tuna Bites", qty: 30, price: 85.00, image_url: "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=300&h=300&fit=crop", emoji: "🐟" },
+    { foodid: 3, name: "Dry Kibble", qty: 100, price: 200.00, image_url: "https://images.unsplash.com/photo-1589924749359-e47042052207?w=300&h=300&fit=crop", emoji: "🍖" },
+    { foodid: 4, name: "Salmon Treats", qty: 40, price: 150.00, image_url: "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=300&h=300&fit=crop", emoji: "🍣" },
+    { foodid: 5, name: "Chicken Pâté", qty: 25, price: 95.00, image_url: "https://images.unsplash.com/photo-1589924749359-e47042052207?w=300&h=300&fit=crop", emoji: "🍗" }
 ];
 
 const MOCK_CAT_FOOD_PREFS = [

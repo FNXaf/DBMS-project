@@ -29,16 +29,16 @@ If you need clarification on overall system behavior, refer to the **Main System
 - Grid of cat cards. **Card design:**
   - **Title:** The cat's `shelter_name` (admin-assigned temporary name) — this is the primary label on each card. Do NOT show "Unnamed Kitty" — almost all cats are unnamed initially, so it's redundant.
   - **Photo** of the cat. All cat images must have a **fixed aspect ratio** (4:3) — the image area has a fixed height via `padding-top:75%` so that different image dimensions never distort the card layout.
-  - **Image placeholder with fur-color gradient:** If a cat has no photo (or the photo fails to load), display a gradient-colored placeholder based on the cat's `fur_color`. A `furColorGradient(furColor)` utility function maps fur-color strings to CSS gradient values (e.g., "White" → light gray gradient, "Orange" → warm orange gradient, etc.). The placeholder shows a 🐱 emoji and the breed name overlaid on the gradient. This also applies when admins add new cats without photos.
+  - **Image placeholder with fur-color gradient:** If a cat has no photo (or the photo fails to load), display a gradient-colored placeholder based on the cat's `fur_color`. A `furColorGradient(furColor)` utility function maps fur-color strings to CSS gradient values (e.g., "White" → light gray gradient, "Orange" → warm orange gradient, etc.). The placeholder shows a 🐱 emoji and the breed name overlaid on the gradient. This also applies when admins add new cats without photos. **Important:** The image error handler must NOT replace the parent element's innerHTML (which would break the detail page layout). Instead, use `onerror` to hide the `<img>` and show a sibling placeholder `<div>` that's hidden by default.
   - **Key attributes** displayed in a clean, readable layout (NOT bubble/pill tags). Use a subtle, integrated design — e.g., small icon + text pairs, a mini info grid, or delicate typography-based layout. Avoid flashy colored bubbles for attributes.
   - Attributes to show on card: breed, gender, age (derived from DOB, displayed in months), cattitude
   - Health status should NOT be prominently displayed on every card — save it for the detail page.
   - Each card has a "Meet Me →" button leading to the cat's detail page.
 
 - **Filter button** that opens a **smart sidebar** (slide-in from the left, popup-style — hidden by default, not persistent). Filter options:
-  - **Gender:** Always visible (not collapsible). Single-select toggle. Clicking one option selects it; clicking the other switches; clicking the already-selected one deselects (clears the gender filter). Think toggle buttons, not radio buttons — the user must be able to clear the selection.
+  - **Gender:** Always visible (not collapsible). Single-select toggle. Clicking one option selects it; clicking the other switches; clicking the already-selected one deselects (clears the gender filter). Think toggle buttons, not radio buttons — the user must be able to clear the selection. **Male button turns blue when active; Female button turns pink when active** (using `data-val` attribute-based CSS selectors).
   - **Age:** Always visible (not collapsible). **Dual-handle range slider** — two `<input type="range">` overlaid on a single track, with a colored fill between the two handles. Displays the current min/max values below. Range: 0–240 months. Labels auto-format to months or years.
-  - **Fur Color:** Multi-select (toggleable chips). User can pick multiple. **Collapsible accordion** — header with ▸/▾ chevron icon, body hidden by default. Click header to expand/collapse.
+  - **Fur Color:** Multi-select (toggleable chips). User can pick multiple. **Collapsible accordion** — header with ▸/▾ chevron icon (decent sized, not tiny), body hidden by default. Click header to expand/collapse. **When a fur-color chip is active, its background uses the fur-color gradient** (from `furColorGradient()`) for a visual color preview.
   - **Breed:** Multi-select. Collapsible accordion.
   - **Cattitude:** Multi-select. Collapsible accordion.
   - **Health Status:** Single-select toggle (same behavior as gender). Collapsible accordion. Maps "Healthy" filter to `Healthy` + `Vaccinated` statuses; "Needs Care" filter to `Under Treatment` status.
@@ -56,7 +56,7 @@ If you need clarification on overall system behavior, refer to the **Main System
 ### 4. 📝 Adoption Form Page (Logged-in users only)
 Fields:
 - User's name, phone, address (pre-filled if available)
-- Name they want to give the cat (this becomes the cat's permanent name)
+- Name they want to give the cat (this becomes the cat's permanent name). **This field is optional** — if left blank, the shelter name is used as the cat's name. Placeholder text should indicate this (e.g., "Leave blank to keep '[shelter_name]'").
 - Pickup method: `Store Pickup` or `Home Delivery` (radio button or toggle)
 - Submit button: "Complete Adoption 🐾"
 
@@ -92,11 +92,13 @@ A dedicated page for cat owners to purchase food. Layout (top to bottom):
 
 #### Suggested Products Bar (Top Section)
 - Displays food items that match the food preferences of the owner's adopted cats. If the owner has multiple cats, aggregate all their preferences.
-- **Visual treatment:** This section must look special — use sparkle effects, four-point star decorations, a subtle glow, or shimmering animations. The heading should display **cat names**: if the owner has 1–3 adopted cats, show their shelter names (e.g., _"Recommended for Snowball, Whiskers & Mittens ✨"_). If more than 3, use _"Recommended for your cats ✨"_. The goal: the UI should make the user feel like these are smart, personalized recommendations — **without** ever explicitly saying "AI" anywhere.
+- **Visual treatment:** This section must look special — use sparkle effects, four-point star decorations, a subtle glow, or shimmering animations. The heading should display **cat names** (using the cat's given name after adoption, falling back to shelter_name): if the owner has 1–3 adopted cats, show their names (e.g., _"Recommended for Snowball, Whiskers & Mittens ✨"_). If more than 3, use _"Recommended for your cats ✨"_. The goal: the UI should make the user feel like these are smart, personalized recommendations — **without** ever explicitly saying "AI" anywhere.
+- **Carousel layout:** Suggested products are displayed as **horizontal cards** in an auto-scrolling carousel (slideshow style, like the review section from The French Workshop reference). One card visible at a time, slides left-to-right automatically every 4 seconds, with navigation dots below. Each card shows: food image, name, price, stock, and Add to Cart button side-by-side.
 - If the owner has no food preferences set for their cats, this section simply doesn't appear.
 
 #### All Products Grid
-- Standard e-commerce-style product cards: photo/icon, food name, price, stock left.
+- Standard e-commerce-style product cards: **food image** (with emoji fallback on error), food name, price, stock left. The grid should be **responsive** — distribute columns based on screen width (e.g., 4–5 columns on wide screens via `repeat(auto-fill, minmax(180px, 1fr))`).
+- Food items in mock data include `image_url` and `emoji` fields. If the image fails to load, fall back to the emoji.
 - Each card has an **"Add to Cart"** button with a quantity selector (or defaults to 1).
 - If an item is out of stock (`qty === 0`), show it as disabled/unavailable.
 

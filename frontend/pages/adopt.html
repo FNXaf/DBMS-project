@@ -82,8 +82,8 @@
 
                         <div class="form-group">
                             <label>Name for your new fur baby 🐱</label>
-                            <input type="text" id="cat_name" placeholder="e.g., Whiskers, Luna, Mochi..." required>
-                            <small style="color:var(--text-muted)">Give your new companion a special name!</small>
+                            <input type="text" id="cat_name" placeholder="Leave blank to keep '${cat.shelter_name}'">
+                            <small style="color:var(--text-muted)">Leave blank to keep the shelter name, or give your companion a special name!</small>
                         </div>
 
                         <div class="form-group">
@@ -105,13 +105,9 @@
 
         function handleAdoption(e) {
             e.preventDefault();
-            const catName = document.getElementById('cat_name').value.trim();
+            const catNameInput = document.getElementById('cat_name').value.trim();
+            const catName = catNameInput || cat.shelter_name;
             const pickupMethod = document.querySelector('input[name="pickup_method"]:checked').value;
-
-            if (!catName) {
-                document.getElementById('adopt-alert').innerHTML = '<p style="color:#d63031;font-weight:700">Please give your cat a name!</p>';
-                return;
-            }
 
             createAdoption({
                 userid: user.userid,

@@ -147,15 +147,16 @@
         const allCats = getCats();
         const uniq = (arr) => [...new Set(arr)].sort();
 
-        function buildChips(containerId, values) {
+        function buildChips(containerId, values, useGradient) {
             const c = document.getElementById(containerId);
-            c.innerHTML = values.map(v =>
-                `<button class="chip" data-val="${v}" onclick="toggleChip(this)">${v}</button>`
-            ).join('');
+            c.innerHTML = values.map(v => {
+                const grad = useGradient ? furColorGradient(v) : '';
+                return `<button class="chip" data-val="${v}" data-gradient="${grad}" onclick="toggleChip(this)">${v}</button>`;
+            }).join('');
         }
-        buildChips('fg-fur', uniq(allCats.map(c => c.fur_color)));
-        buildChips('fg-breed', uniq(allCats.map(c => c.breed)));
-        buildChips('fg-cattitude', uniq(allCats.map(c => c.cattitude)));
+        buildChips('fg-fur', uniq(allCats.map(c => c.fur_color)), true);
+        buildChips('fg-breed', uniq(allCats.map(c => c.breed)), false);
+        buildChips('fg-cattitude', uniq(allCats.map(c => c.cattitude)), false);
 
         /* ---- Toggle helpers ---- */
         function toggleSingle(btn) {
@@ -166,6 +167,18 @@
         }
         function toggleChip(btn) {
             btn.classList.toggle('active');
+            // Apply gradient bg for fur-color chips
+            if (btn.dataset.gradient && btn.classList.contains('active')) {
+                btn.style.background = btn.dataset.gradient;
+                btn.style.borderColor = 'transparent';
+                btn.style.color = '#fff';
+                btn.style.textShadow = '0 1px 3px rgba(0,0,0,.25)';
+            } else {
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+                btn.style.textShadow = '';
+            }
             applyFilters();
         }
         function getActiveVals(containerId) {
@@ -209,7 +222,13 @@
 
         /* ---- Clear All ---- */
         function clearAllFilters() {
-            document.querySelectorAll('.toggle-btn.active, .chip.active').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.toggle-btn.active, .chip.active').forEach(b => {
+                b.classList.remove('active');
+                b.style.background = '';
+                b.style.borderColor = '';
+                b.style.color = '';
+                b.style.textShadow = '';
+            });
             document.getElementById('age-min').value = 0;
             document.getElementById('age-max').value = 240;
             syncAgeSlider();

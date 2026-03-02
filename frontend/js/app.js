@@ -71,8 +71,11 @@ function getCatImageHTML(cat) {
     return `
         <img src="${cat.photo_url}"
              alt="${cat.shelter_name || cat.breed}"
-             onerror="this.parentElement.innerHTML='<div class=\\'cat-img-placeholder\\' style=\\'background: ${grad}\\'><span>🐱</span><span class=\\'breed-label\\'>${cat.breed}</span></div>'"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
              style="width: 100%; height: 100%; object-fit: cover;">
+        <div class="cat-img-placeholder" style="display:none;background: ${grad};">
+            <span>🐱</span><span class="breed-label">${cat.breed}</span>
+        </div>
     `;
 }
 

@@ -17,10 +17,13 @@
             <p style="color:var(--text-light)">Treat your fur babies to the best nutrition!</p>
         </div>
 
-        <!-- Suggested Products Bar -->
+        <!-- Suggested Products — slideshow carousel -->
         <div class="suggested-bar" id="suggested-bar" style="display:none">
             <h2 id="suggested-heading">Recommended for your cats ✨</h2>
-            <div class="suggested-products" id="suggested-products"></div>
+            <div class="carousel-viewport">
+                <div class="carousel-track" id="suggested-products"></div>
+            </div>
+            <div class="carousel-dots" id="carousel-dots"></div>
         </div>
 
         <!-- All Products Grid -->
@@ -88,7 +91,7 @@
             const adoptions = getUserAdoptions(userid).filter(a => ['Pending','Approved','Completed'].includes(a.status));
             const catNames = [...new Set(adoptions.map(a => {
                 const cat = getCatById(a.catid);
-                return cat ? cat.shelter_name : null;
+                return cat ? (cat.name || cat.shelter_name) : null;
             }).filter(Boolean))];
             let nameLabel;
             if (catNames.length === 0) nameLabel = 'your cats';
@@ -100,19 +103,28 @@
             document.getElementById('suggested-bar').style.display = '';
             document.getElementById('suggested-heading').innerHTML = `Recommended for ${nameLabel} ✨`;
             const container = document.getElementById('suggested-products');
+            // Build horizontal cards as carousel slides
             container.innerHTML = suggested.map(f => `
-                <div class="sparkle-card product-card" style="min-width:200px;max-width:220px">
-                    <div class="product-card-img">🍽️</div>
-                    <div class="product-card-body">
-                        <h4>${f.name}</h4>
-                        <span class="price">₹${f.price.toFixed(2)}</span>
-                        <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
-                        <button class="add-cart-btn" ${f.qty <= 0 ? 'disabled' : ''} onclick="handleAddToCart(${f.foodid})">
-                            ${f.qty > 0 ? 'Add to Cart' : 'Out of Stock'}
-                        </button>
+                <div class="carousel-slide">
+                    <div class="sparkle-card sparkle-horizontal">
+                        <div class="sparkle-h-img">
+                            <img src="${f.image_url || ''}" alt="${f.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            <span class="sparkle-h-emoji" style="display:none">${f.emoji || '🍽️'}</span>
+                        </div>
+                        <div class="sparkle-h-body">
+                            <h4>${f.name}</h4>
+                            <span class="price">₹${f.price.toFixed(2)}</span>
+                            <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
+                            <button class="add-cart-btn" ${f.qty <= 0 ? 'disabled' : ''} onclick="event.stopPropagation();handleAddToCart(${f.foodid})">
+                                ${f.qty > 0 ? 'Add to Cart' : 'Out of Stock'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             `).join('');
+
+            // Init carousel auto-scroll
+            initCarousel();
         }
 
         /* ---- Render All Products ---- */
@@ -131,7 +143,10 @@
             empty.style.display = 'none';
             grid.innerHTML = foods.map(f => `
                 <div class="product-card">
-                    <div class="product-card-img">🍽️</div>
+                    <div class="product-card-img">
+                        <img src="${f.image_url || ''}" alt="${f.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                        <span class="product-card-emoji" style="display:none">${f.emoji || '🍽️'}</span>
+                    </div>
                     <div class="product-card-body">
                         <h4>${f.name}</h4>
                         <span class="price">₹${f.price.toFixed(2)}</span>
@@ -179,7 +194,9 @@
                 total += subtotal;
                 return `
                     <div class="cart-item">
-                        <div class="cart-item-img">🍽️</div>
+                        <div class="cart-item-img">
+                            ${food.image_url ? `<img src="${food.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px" onerror="this.outerHTML='${food.emoji || '🍽️'}'">` : (food.emoji || '🍽️')}
+                        </div>
                         <div class="cart-item-info">
                             <h4>${food.name}</h4>
                             <span class="cart-item-price">₹${food.price.toFixed(2)} × ${item.quantity}</span>
@@ -233,6 +250,50 @@
             } else {
                 showToast('❌ ' + (result.error || 'Checkout failed'), 'error');
             }
+        }
+
+        /* ---- Carousel auto-scroll for suggested ---- */
+        let carouselInterval = null;
+        let carouselIndex = 0;
+
+        function initCarousel() {
+            const track = document.getElementById('suggested-products');
+            const slides = track.querySelectorAll('.carousel-slide');
+            const dotsContainer = document.getElementById('carousel-dots');
+            if (slides.length <= 1) return;
+
+            // Build dots
+            dotsContainer.innerHTML = Array.from(slides).map((_, i) =>
+                `<button class="carousel-dot${i === 0 ? ' active' : ''}" onclick="goToSlide(${i})"></button>`
+            ).join('');
+
+            carouselIndex = 0;
+            updateCarousel();
+            // Auto-advance every 4s
+            if (carouselInterval) clearInterval(carouselInterval);
+            carouselInterval = setInterval(() => {
+                carouselIndex = (carouselIndex + 1) % slides.length;
+                updateCarousel();
+            }, 4000);
+        }
+
+        function updateCarousel() {
+            const track = document.getElementById('suggested-products');
+            track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+            const dots = document.querySelectorAll('.carousel-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === carouselIndex));
+        }
+
+        function goToSlide(i) {
+            carouselIndex = i;
+            updateCarousel();
+            // Reset timer
+            if (carouselInterval) clearInterval(carouselInterval);
+            const slides = document.querySelectorAll('#suggested-products .carousel-slide');
+            carouselInterval = setInterval(() => {
+                carouselIndex = (carouselIndex + 1) % slides.length;
+                updateCarousel();
+            }, 4000);
         }
 
         /* ---- Init ---- */
