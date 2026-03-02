@@ -110,7 +110,8 @@ const MOCK_FOOD = [
     { foodid: 2, name: "Tuna Bites", qty: 30, price: 85.00, image_url: "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=300&h=300&fit=crop", emoji: "🐟" },
     { foodid: 3, name: "Dry Kibble", qty: 100, price: 200.00, image_url: "https://images.unsplash.com/photo-1589924749359-e47042052207?w=300&h=300&fit=crop", emoji: "🍖" },
     { foodid: 4, name: "Salmon Treats", qty: 40, price: 150.00, image_url: "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=300&h=300&fit=crop", emoji: "🍣" },
-    { foodid: 5, name: "Chicken Pâté", qty: 25, price: 95.00, image_url: "https://images.unsplash.com/photo-1589924749359-e47042052207?w=300&h=300&fit=crop", emoji: "🍗" }
+    { foodid: 5, name: "Chicken Pâté", qty: 25, price: 95.00, image_url: "https://images.unsplash.com/photo-1589924749359-e47042052207?w=300&h=300&fit=crop", emoji: "🍗" },
+    { foodid: 6, name: "Catnip", qty: 60, price: 45.00, image_url: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=300&h=300&fit=crop", emoji: "🌿" }
 ];
 
 const MOCK_CAT_FOOD_PREFS = [
@@ -152,7 +153,7 @@ function initializeData() {
         localStorage.setItem('meowtopia_next_cat_id', '11');
         localStorage.setItem('meowtopia_next_user_id', '3');
         localStorage.setItem('meowtopia_next_adoption_id', '1');
-        localStorage.setItem('meowtopia_next_food_id', '6');
+        localStorage.setItem('meowtopia_next_food_id', '7');
         localStorage.setItem('meowtopia_next_cart_id', '1');
         localStorage.setItem('meowtopia_next_purchase_id', '1');
         localStorage.setItem('meowtopia_initialized', 'true');
@@ -242,6 +243,11 @@ function deleteCat(catid) {
     let cats = getCats();
     cats = cats.filter(c => c.catid !== parseInt(catid));
     localStorage.setItem('meowtopia_cats', JSON.stringify(cats));
+}
+
+// ===== Food Name Standardization =====
+function standardizeFoodName(name) {
+    return name.trim().replace(/\s+/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 }
 
 // ===== Food CRUD =====

@@ -172,12 +172,14 @@
                 btn.style.background = btn.dataset.gradient;
                 btn.style.borderColor = 'transparent';
                 btn.style.color = '#fff';
-                btn.style.textShadow = '0 1px 3px rgba(0,0,0,.25)';
+                btn.style.textShadow = 'none';
+                btn.style.webkitTextStroke = '0.5px rgba(0,0,0,.45)';
             } else {
                 btn.style.background = '';
                 btn.style.borderColor = '';
                 btn.style.color = '';
                 btn.style.textShadow = '';
+                btn.style.webkitTextStroke = '';
             }
             applyFilters();
         }
@@ -228,6 +230,7 @@
                 b.style.borderColor = '';
                 b.style.color = '';
                 b.style.textShadow = '';
+                b.style.webkitTextStroke = '';
             });
             document.getElementById('age-min').value = 0;
             document.getElementById('age-max').value = 240;

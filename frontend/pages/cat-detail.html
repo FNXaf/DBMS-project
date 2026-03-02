@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cat Details — Meowtopia 🐾</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
@@ -41,6 +41,7 @@
             const foodPrefs = getCatFoodPrefs(cat.catid);
             const age = formatAge(cat.dob);
             const healthClass = cat.health_status === 'Healthy' ? 'healthy' : 'needs-care';
+            const furGrad = furColorGradient(cat.fur_color);
 
             let adoptBtn = '';
             if (cat.is_available) {
@@ -62,18 +63,22 @@
                 </div>` : '';
 
             content.innerHTML = `
+                <div class="detail-fur-banner" style="background:${furGrad}">
+                    <div class="fur-swatch" style="background:${furGrad}"></div>
+                    ${cat.fur_color} coat
+                </div>
                 <div class="detail-grid">
-                    <div class="detail-img">
+                    <div class="detail-img" style="border:3px solid transparent;background-image:${furGrad};background-origin:border-box;">
                         ${getCatImageHTML(cat)}
                     </div>
                     <div class="detail-info">
-                        <h1>${cat.shelter_name}</h1>
+                        <h1 style="font-family:'Playfair Display',Georgia,serif">${cat.shelter_name}</h1>
                         <p class="breed">${cat.breed}</p>
 
                         <div class="detail-attrs">
                             <span class="detail-attr"><span class="icon">⏳</span> ${age}</span>
                             <span class="detail-attr"><span class="icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</span>
-                            <span class="detail-attr"><span class="icon">🎨</span> ${cat.fur_color}</span>
+                            <span class="detail-attr" style="background:${furGrad};color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.2);-webkit-text-stroke:.3px rgba(0,0,0,.2)"><span class="icon">🎨</span> ${cat.fur_color}</span>
                             <span class="detail-attr"><span class="icon">😸</span> ${cat.cattitude}</span>
                         </div>
 

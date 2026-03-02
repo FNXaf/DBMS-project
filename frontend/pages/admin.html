@@ -94,9 +94,22 @@
                         <input type="text" id="cat-cattitude" placeholder="e.g., Playful, Sassy, Chill">
                     </div>
                     <div class="form-group">
-                        <label>Photo URL (optional)</label>
-                        <input type="text" id="cat-photo" placeholder="https://example.com/cat.jpg">
-                        <small style="color:var(--text-muted)">Leave blank for auto-generated placeholder</small>
+                        <label>Upload Photo</label>
+                        <input type="file" id="cat-photo-file" accept="image/*" onchange="previewCatPhoto(this)">
+                        <small style="color:var(--text-muted)">Upload an image. You can crop/position it below. Leave empty for auto-placeholder.</small>
+                        <div id="cat-photo-preview" style="margin-top:.6rem;display:none">
+                            <div class="img-crop-preview">
+                                <img id="cat-photo-preview-img" src="" alt="Preview">
+                            </div>
+                            <div style="margin-top:.4rem">
+                                <label style="font-size:.82rem;font-weight:600;color:var(--text-light)">Position: </label>
+                                <select id="cat-photo-position" style="padding:.25rem .5rem;border-radius:6px;border:1px solid var(--border);font-size:.82rem">
+                                    <option value="center">Center</option>
+                                    <option value="top">Top</option>
+                                    <option value="bottom">Bottom</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Food Preferences</label>
@@ -109,17 +122,24 @@
 
         <!-- Add Food Panel -->
         <div class="admin-panel" id="panel-add-food">
-            <div class="add-cat-form" style="max-width:480px">
+            <div class="add-cat-form" style="max-width:520px">
                 <h3>Add Food Item</h3>
                 <div id="add-food-alert"></div>
                 <form id="add-food-form" onsubmit="handleAddFood(event)">
                     <div class="form-group">
-                        <label>Food Name *</label>
-                        <input type="text" id="food-name" placeholder="e.g., Tuna Bites, Cat Milk" required>
+                        <label>Select Existing Food (or type a new name)</label>
+                        <select id="food-dropdown" onchange="onFoodDropdownChange()">
+                            <option value="">— Add a new product —</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="new-food-name-group">
+                        <label>New Food Name *</label>
+                        <input type="text" id="food-name" placeholder="e.g., Tuna Bites, Cat Milk">
+                        <small style="color:var(--text-muted)">Will be auto-formatted to Title Case (e.g. "sOMETHING food" → "Something Food")</small>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Quantity in Stock</label>
+                            <label>Quantity to Add</label>
                             <input type="number" id="food-qty" value="0" min="0">
                         </div>
                         <div class="form-group">
@@ -127,7 +147,7 @@
                             <input type="number" id="food-price" placeholder="0.00" step="0.01" min="0" required>
                         </div>
                     </div>
-                    <button type="submit" class="form-submit">Add Food Item 🍽️</button>
+                    <button type="submit" class="form-submit" id="add-food-submit-btn">Add Food Item 🍽️</button>
                 </form>
             </div>
         </div>
@@ -139,6 +159,15 @@
             <button class="modal-close" onclick="closeEditModal()">✕</button>
             <h2>Edit Cat Details</h2>
             <div id="edit-cat-form-content"></div>
+        </div>
+    </div>
+
+    <!-- Edit Food Modal -->
+    <div class="modal-backdrop" id="edit-food-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeEditFoodModal()">✕</button>
+            <h2>Edit Food Item</h2>
+            <div id="edit-food-form-content"></div>
         </div>
     </div>
 
@@ -168,6 +197,7 @@
             loadAdoptionsTable();
             loadFoodTable();
             loadFoodCheckboxes();
+            loadFoodDropdown();
         }
 
         /* ---- Tab switching ---- */
@@ -250,7 +280,10 @@
                     <td><strong>${f.name}</strong></td>
                     <td>${f.qty}</td>
                     <td>₹${f.price.toFixed(2)}</td>
-                    <td><div class="actions"><button class="btn-delete" onclick="handleDeleteFood(${f.foodid})">Delete</button></div></td>
+                    <td><div class="actions">
+                        <button class="btn-edit" onclick="editFood(${f.foodid})">Edit</button>
+                        <button class="btn-delete" onclick="handleDeleteFood(${f.foodid})">Delete</button>
+                    </div></td>
                 </tr>`).join('')}
             </tbody></table>`;
         }
@@ -261,6 +294,49 @@
             document.getElementById('food-checkboxes').innerHTML = foods.map(f =>
                 `<label class="chip" style="cursor:pointer"><input type="checkbox" value="${f.foodid}" name="food_prefs" style="margin-right:.3rem"> ${f.name}</label>`
             ).join('');
+        }
+
+        /* ---- Food Dropdown for Add Food ---- */
+        function loadFoodDropdown() {
+            const foods = getFood();
+            const sel = document.getElementById('food-dropdown');
+            sel.innerHTML = '<option value="">— Add a new product —</option>' +
+                foods.map(f => `<option value="${f.foodid}">${f.name}</option>`).join('');
+        }
+        function onFoodDropdownChange() {
+            const sel = document.getElementById('food-dropdown');
+            const nameGroup = document.getElementById('new-food-name-group');
+            const btn = document.getElementById('add-food-submit-btn');
+            if (sel.value) {
+                nameGroup.style.display = 'none';
+                btn.textContent = 'Restock Existing Item 📦';
+                // pre-fill price
+                const food = getFoodById(parseInt(sel.value));
+                if (food) document.getElementById('food-price').value = food.price.toFixed(2);
+            } else {
+                nameGroup.style.display = '';
+                btn.textContent = 'Add Food Item 🍽️';
+                document.getElementById('food-price').value = '';
+            }
+        }
+
+        /* ---- Cat Photo Upload Preview ---- */
+        let catPhotoDataUrl = '';
+        function previewCatPhoto(input) {
+            const preview = document.getElementById('cat-photo-preview');
+            const img = document.getElementById('cat-photo-preview-img');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    catPhotoDataUrl = e.target.result;
+                    img.src = catPhotoDataUrl;
+                    preview.style.display = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+                catPhotoDataUrl = '';
+            }
         }
 
         /* ---- Handlers ---- */
@@ -277,6 +353,7 @@
             }
 
             const selectedFoods = [...document.querySelectorAll('input[name="food_prefs"]:checked')].map(cb => parseInt(cb.value));
+            const objectPosition = document.getElementById('cat-photo-position') ? document.getElementById('cat-photo-position').value : 'center';
 
             const newCat = addCat({
                 shelter_name: shelterName,
@@ -287,7 +364,8 @@
                 intake_date: document.getElementById('cat-intake').value,
                 health_status: document.getElementById('cat-health').value,
                 cattitude: document.getElementById('cat-cattitude').value.trim() || 'Friendly',
-                photo_url: document.getElementById('cat-photo').value.trim() || ''
+                photo_url: catPhotoDataUrl || '',
+                photo_position: objectPosition
             });
 
             if (newCat && selectedFoods.length > 0) {
@@ -297,6 +375,8 @@
             if (newCat) {
                 alert.innerHTML = `<p style="color:#00b894;font-weight:700;margin-bottom:.6rem">✅ Cat "${shelterName}" added! (ID: #${newCat.catid})</p>`;
                 document.getElementById('add-cat-form').reset();
+                document.getElementById('cat-photo-preview').style.display = 'none';
+                catPhotoDataUrl = '';
                 loadCatsTable();
             } else {
                 alert.innerHTML = '<p style="color:#d63031;font-weight:700;margin-bottom:.6rem">⚠️ Failed to add cat. Shelter name might be a duplicate.</p>';
@@ -305,16 +385,41 @@
 
         function handleAddFood(e) {
             e.preventDefault();
-            const alert = document.getElementById('add-food-alert');
-            const newFood = addFood({
-                name: document.getElementById('food-name').value.trim(),
-                qty: parseInt(document.getElementById('food-qty').value) || 0,
-                price: parseFloat(document.getElementById('food-price').value) || 0
-            });
-            alert.innerHTML = `<p style="color:#00b894;font-weight:700;margin-bottom:.6rem">✅ Food item added! (ID: #${newFood.foodid})</p>`;
+            const alertEl = document.getElementById('add-food-alert');
+            const dropdown = document.getElementById('food-dropdown');
+            const qty = parseInt(document.getElementById('food-qty').value) || 0;
+            const price = parseFloat(document.getElementById('food-price').value) || 0;
+
+            if (dropdown.value) {
+                // Restock existing food
+                const foodid = parseInt(dropdown.value);
+                const food = getFoodById(foodid);
+                if (food) {
+                    updateFood(foodid, { qty: food.qty + qty, price: price });
+                    alertEl.innerHTML = `<p style="color:#00b894;font-weight:700;margin-bottom:.6rem">✅ Restocked "${food.name}" (+${qty}). New price: ₹${price.toFixed(2)}</p>`;
+                }
+            } else {
+                // Add new food with standardized name
+                const rawName = document.getElementById('food-name').value.trim();
+                if (!rawName) {
+                    alertEl.innerHTML = '<p style="color:#d63031;font-weight:700;margin-bottom:.6rem">⚠️ Please enter a food name or select an existing one.</p>';
+                    return;
+                }
+                const stdName = standardizeFoodName(rawName);
+                // Check if name already exists (case-insensitive)
+                const existing = getFood().find(f => f.name.toLowerCase() === stdName.toLowerCase());
+                if (existing) {
+                    alertEl.innerHTML = `<p style="color:#d63031;font-weight:700;margin-bottom:.6rem">⚠️ "${stdName}" already exists! Use the dropdown to restock it instead.</p>`;
+                    return;
+                }
+                const newFood = addFood({ name: stdName, qty: qty, price: price });
+                alertEl.innerHTML = `<p style="color:#00b894;font-weight:700;margin-bottom:.6rem">✅ Food item "${stdName}" added! (ID: #${newFood.foodid})</p>`;
+            }
             document.getElementById('add-food-form').reset();
+            onFoodDropdownChange();
             loadFoodTable();
             loadFoodCheckboxes();
+            loadFoodDropdown();
         }
 
         function handleDeleteCat(catid) {
@@ -329,6 +434,11 @@
         function editCat(catid) {
             const cat = getCatById(catid);
             if (!cat) return;
+            window._editCatPhotoData = '';
+
+            const currentPhotoHTML = cat.photo_url
+                ? `<div class="img-crop-preview" style="margin-bottom:.5rem"><img src="${cat.photo_url}" alt="Current" style="object-position:${cat.photo_position || 'center'}"></div>`
+                : '<p style="color:var(--text-muted);font-size:.85rem">No photo uploaded</p>';
 
             document.getElementById('edit-cat-form-content').innerHTML = `
                 <form onsubmit="saveEditCat(event,${catid})">
@@ -379,6 +489,22 @@
                             <option value="false" ${!cat.is_available?'selected':''}>Adopted / Unavailable</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Photo</label>
+                        ${currentPhotoHTML}
+                        <input type="file" accept="image/*" onchange="editCatPhotoPreview(this,${catid})" style="margin-top:.4rem">
+                        <div style="display:none;margin-top:.4rem">
+                            <div class="img-crop-preview"><img id="edit-cat-photo-img" src="" alt="New"></div>
+                        </div>
+                        <div style="margin-top:.4rem">
+                            <label style="font-size:.82rem;font-weight:600;color:var(--text-light)">Position: </label>
+                            <select id="edit-photo-position" style="padding:.25rem .5rem;border-radius:6px;border:1px solid var(--border);font-size:.82rem">
+                                <option value="center" ${(cat.photo_position||'center')==='center'?'selected':''}>Center</option>
+                                <option value="top" ${cat.photo_position==='top'?'selected':''}>Top</option>
+                                <option value="bottom" ${cat.photo_position==='bottom'?'selected':''}>Bottom</option>
+                            </select>
+                        </div>
+                    </div>
                     <div style="display:flex;gap:.8rem;margin-top:1rem">
                         <button type="submit" class="btn-primary" style="flex:1;padding:.65rem;border-radius:8px">Save Changes</button>
                         <button type="button" class="btn-outline" style="flex:1;padding:.65rem;border-radius:8px" onclick="closeEditModal()">Cancel</button>
@@ -399,7 +525,7 @@
                 if (dup) { alert('A cat with this shelter name already exists!'); return; }
             }
 
-            updateCat(catid, {
+            const updates = {
                 shelter_name: newShelterName,
                 breed: document.getElementById('edit-breed').value.trim(),
                 fur_color: document.getElementById('edit-fur').value.trim(),
@@ -407,8 +533,16 @@
                 gender: document.getElementById('edit-gender').value,
                 health_status: document.getElementById('edit-health').value,
                 cattitude: document.getElementById('edit-cattitude').value.trim(),
-                is_available: document.getElementById('edit-available').value === 'true'
-            });
+                is_available: document.getElementById('edit-available').value === 'true',
+                photo_position: document.getElementById('edit-photo-position').value
+            };
+
+            // If a new photo was uploaded, use it
+            if (window._editCatPhotoData) {
+                updates.photo_url = window._editCatPhotoData;
+            }
+
+            updateCat(catid, updates);
             closeEditModal();
             loadCatsTable();
         }
@@ -419,6 +553,75 @@
         document.getElementById('edit-cat-modal').addEventListener('click', function(e) {
             if (e.target === this) closeEditModal();
         });
+
+        /* ---- Edit Food Modal ---- */
+        function editFood(foodid) {
+            const food = getFoodById(foodid);
+            if (!food) return;
+
+            document.getElementById('edit-food-form-content').innerHTML = `
+                <form onsubmit="saveEditFood(event,${foodid})">
+                    <div class="form-group">
+                        <label>Food Name</label>
+                        <input type="text" id="edit-food-name" value="${food.name}" required>
+                        <small style="color:var(--text-muted)">Will be auto-formatted to Title Case</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantity in Stock</label>
+                            <input type="number" id="edit-food-qty" value="${food.qty}" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Price (₹)</label>
+                            <input type="number" id="edit-food-price" value="${food.price.toFixed(2)}" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:.8rem;margin-top:1rem">
+                        <button type="submit" class="btn-primary" style="flex:1;padding:.65rem;border-radius:8px">Save Changes</button>
+                        <button type="button" class="btn-outline" style="flex:1;padding:.65rem;border-radius:8px" onclick="closeEditFoodModal()">Cancel</button>
+                    </div>
+                </form>`;
+
+            document.getElementById('edit-food-modal').classList.add('show');
+        }
+
+        function saveEditFood(e, foodid) {
+            e.preventDefault();
+            const name = standardizeFoodName(document.getElementById('edit-food-name').value);
+            const qty = parseInt(document.getElementById('edit-food-qty').value) || 0;
+            const price = parseFloat(document.getElementById('edit-food-price').value) || 0;
+
+            // Check uniqueness
+            const existing = getFood().find(f => f.name.toLowerCase() === name.toLowerCase() && f.foodid !== foodid);
+            if (existing) { alert('A food item with this name already exists!'); return; }
+
+            updateFood(foodid, { name, qty, price });
+            closeEditFoodModal();
+            loadFoodTable();
+            loadFoodCheckboxes();
+            loadFoodDropdown();
+        }
+
+        function closeEditFoodModal() {
+            document.getElementById('edit-food-modal').classList.remove('show');
+        }
+        document.getElementById('edit-food-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditFoodModal();
+        });
+
+        /* ---- Edit Cat: also update photo upload support ---- */
+        function editCatPhotoPreview(input, catid) {
+            const img = document.getElementById('edit-cat-photo-img');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    window._editCatPhotoData = e.target.result;
+                    img.src = e.target.result;
+                    img.parentElement.style.display = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
     </script>
 </body>
 </html>

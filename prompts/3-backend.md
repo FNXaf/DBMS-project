@@ -219,6 +219,28 @@ Common HTTP status codes to use:
 
 ---
 
+## Food Naming Standardization
+The frontend currently applies **Title Case** normalization to all food names via a `standardizeFoodName()` utility (trims whitespace, collapses multiple spaces, capitalizes the first letter of each word). The backend **must replicate this** when inserting or updating food items to prevent duplicates like "Cat Milk" vs "cat milk" vs "CAT MILK".
+
+Implementation:
+- Apply Title Case normalization in the `POST /api/food` and `PUT /api/food/:foodid` routes before saving to DB.
+- On insert, check for case-insensitive duplicates: `SELECT * FROM Food WHERE LOWER(name) = LOWER(?)` — return `409 Conflict` if a match exists.
+- The admin panel frontend also provides a dropdown of existing food items for restocking (incrementing qty) vs adding a brand-new product. The backend should support both:
+  - **Restock:** `PUT /api/food/:foodid` with updated `qty` (increment)
+  - **New product:** `POST /api/food` with full item data (name, qty, price, image_url, emoji)
+
+## Cat Photo Uploads
+The frontend currently stores cat photos as **base64 data URLs** in `localStorage` (for the static mock phase). When the backend is connected:
+- Use `multer` to accept file uploads on `POST /api/cats` and `PUT /api/cats/:catid`
+- Store files in `/public/uploads/cats/` and save only the file path in the DB
+- The admin can also select a **crop position** (`center`, `top`, `bottom`) which maps to CSS `object-position`. Store this as a `photo_position` column in the `Cat` table (default: `center`).
+- Return both `photo_url` and `photo_position` in all cat API responses.
+
+## Admin Food Editing
+The admin panel now supports **editing existing food products** (name, qty, price) via a modal. The backend `PUT /api/food/:foodid` route must handle partial updates — any combination of `name`, `qty`, `price`, `image_url`, `emoji` fields.
+
+---
+
 ## Notes for the Team
 - Either student (Shlok or Sam) might be writing backend code in different sessions — always ask what routes/files already exist before creating new ones to avoid conflicts
 - If a new feature is requested, add a new route — don't modify existing ones unless asked

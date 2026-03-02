@@ -75,6 +75,7 @@ CREATE TABLE Cat (
     health_status   VARCHAR(100) DEFAULT 'Healthy',
     cattitude       VARCHAR(100),                   -- personality trait, fun field
     photo_url       VARCHAR(255),
+    photo_position  VARCHAR(10) DEFAULT 'center',  -- CSS object-position for photo crop (center/top/bottom)
     is_available    BOOLEAN DEFAULT TRUE
 );
 -- NOTE: Age is computed as TIMESTAMPDIFF(MONTH, dob, CURDATE()) wherever needed.
@@ -82,10 +83,12 @@ CREATE TABLE Cat (
 
 -- Food table
 CREATE TABLE Food (
-    foodid  INT AUTO_INCREMENT PRIMARY KEY,
-    name    VARCHAR(100) NOT NULL,
-    qty     INT DEFAULT 0,      -- stock quantity, decremented on purchase
-    price   DECIMAL(10, 2) NOT NULL
+    foodid      INT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL,
+    qty         INT DEFAULT 0,          -- stock quantity, decremented on purchase
+    price       DECIMAL(10, 2) NOT NULL,
+    image_url   VARCHAR(255),           -- product image URL
+    emoji       VARCHAR(10)             -- display emoji for UI cards
 );
 
 -- Adoption table (relationship entity between User and Cat)

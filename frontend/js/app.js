@@ -68,11 +68,12 @@ function handleLogout() {
 // ===== Cat Image Helper =====
 function getCatImageHTML(cat) {
     const grad = furColorGradient(cat.fur_color);
+    const pos = cat.photo_position || 'center';
     return `
         <img src="${cat.photo_url}"
              alt="${cat.shelter_name || cat.breed}"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-             style="width: 100%; height: 100%; object-fit: cover;">
+             style="width: 100%; height: 100%; object-fit: cover; object-position: ${pos};">
         <div class="cat-img-placeholder" style="display:none;background: ${grad};">
             <span>🐱</span><span class="breed-label">${cat.breed}</span>
         </div>
