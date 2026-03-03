@@ -89,6 +89,7 @@
 
             // Build heading with cat names (up to 3)
             const adoptions = getUserAdoptions(userid).filter(a => ['Pending','Approved','Completed'].includes(a.status));
+            const ownedCatIds = new Set(adoptions.map(a => a.catid));
             const catNames = [...new Set(adoptions.map(a => {
                 const cat = getCatById(a.catid);
                 return cat ? (cat.name || cat.shelter_name) : null;
@@ -105,9 +106,9 @@
             const container = document.getElementById('suggested-products');
             // Build horizontal cards as carousel slides
             container.innerHTML = suggested.map(f => {
-                const preferringCats = getCatsThatPreferFood(f.foodid);
+                const preferringCats = getCatsThatPreferFood(f.foodid).filter(c => ownedCatIds.has(c.catid));
                 const catTags = preferringCats.length > 0 
-                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span>${c.shelter_name || c.name || 'Cat'}</span>`).join('')}</div>`
+                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span>${c.name || c.shelter_name || 'Cat'}</span>`).join('')}</div>`
                     : '';
                 return `
                 <div class="carousel-slide">

@@ -171,7 +171,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 /* dual range slider */
 .dual-range{position:relative;height:50px;margin-top:.3rem}
 .dual-range-track{position:absolute;top:18px;left:0;right:0;height:6px;border-radius:3px;background:var(--border)}
-.dual-range-fill{position:absolute;height:6px;background:var(--primary);border-radius:3px;top:18px;pointer-events:none;opacity:.7}
+.dual-range-fill{position:absolute;height:100%;background:var(--primary);border-radius:3px;top:0;pointer-events:none;opacity:.7}
 .dual-range input[type=range]{position:absolute;width:100%;top:0;height:40px;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:none;z-index:2;margin:0}
 .dual-range input[type=range]::-webkit-slider-runnable-track{height:6px;background:transparent}
 .dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:all;width:20px;height:20px;border-radius:50%;background:var(--primary);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.22);cursor:pointer;margin-top:-7px}
