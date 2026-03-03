@@ -40,6 +40,15 @@
         const content = document.getElementById('adopt-content');
         const returnTo = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
 
+        function esc(v) {
+            return String(v ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         if (!user) {
             content.innerHTML = `<div class="form-card text-center"><h2>🔐 Login Required</h2><p>You need to be logged in to adopt a cat!</p><a href="login.html?redirect=${returnTo}" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Login Now</a></div>`;
         } else if (!cat) {
@@ -48,56 +57,60 @@
             content.innerHTML = `<div class="form-card text-center"><h2>💕 Already Adopted</h2><p>This lucky kitty already found a home!</p><a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Browse Other Cats</a></div>`;
         } else {
             const age = formatAge(cat.dob);
-            content.innerHTML = `
-                <!-- Cat Preview -->
-                <div class="cat-preview">
-                    <div class="cat-preview-img">${getCatImageHTML(cat)}</div>
-                    <div class="cat-preview-info">
-                        <h3>${cat.shelter_name}</h3>
-                        <p>${cat.breed} · ${age} · ${cat.gender}</p>
-                        <p>${cat.cattitude}</p>
+            try {
+                content.innerHTML = `
+                    <!-- Cat Preview -->
+                    <div class="cat-preview">
+                        <div class="cat-preview-img">${getCatImageHTML(cat)}</div>
+                        <div class="cat-preview-info">
+                            <h3>${esc(cat.shelter_name)}</h3>
+                            <p>${esc(cat.breed)} · ${esc(age)} · ${esc(cat.gender)}</p>
+                            <p>${esc(cat.cattitude)}</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-card">
-                    <h2>Complete Your Adoption 💕</h2>
-                    <div id="adopt-alert"></div>
+                    <div class="form-card">
+                        <h2>Complete Your Adoption 💕</h2>
+                        <div id="adopt-alert"></div>
 
-                    <form id="adoption-form" onsubmit="handleAdoption(event)">
-                        <div class="form-row">
+                        <form id="adoption-form" onsubmit="handleAdoption(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Your Name</label>
+                                    <input type="text" value="${esc(user.full_name)}" readonly style="opacity:.7">
+                                </div>
+                                <div class="form-group">
+                                    <label>Your Phone</label>
+                                    <input type="text" id="phone" value="${esc(user.phone || '')}" placeholder="Phone number" required>
+                                </div>
+                            </div>
+
                             <div class="form-group">
-                                <label>Your Name</label>
-                                <input type="text" value="${user.full_name}" readonly style="opacity:.7">
+                                <label>Your Address</label>
+                                <textarea id="address" placeholder="Address for delivery" required>${esc(user.address || '')}</textarea>
                             </div>
+
                             <div class="form-group">
-                                <label>Your Phone</label>
-                                <input type="text" id="phone" value="${user.phone || ''}" placeholder="Phone number" required>
+                                <label>Name for your new fur baby 🐱</label>
+                                <input type="text" id="cat_name" placeholder="Leave blank to keep &quot;${esc(cat.shelter_name)}&quot;">
+                                <small style="color:var(--text-muted)">Leave blank to keep the shelter name, or give your companion a special name!</small>
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label>Your Address</label>
-                            <textarea id="address" placeholder="Address for delivery" required>${user.address || ''}</textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Name for your new fur baby 🐱</label>
-                            <input type="text" id="cat_name" placeholder="Leave blank to keep '${cat.shelter_name}'">
-                            <small style="color:var(--text-muted)">Leave blank to keep the shelter name, or give your companion a special name!</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label>How would you like to receive your cat?</label>
-                            <input type="hidden" id="pickup_method" value="pickup">
-                            <div class="pickup-method-buttons" style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.3rem">
-                                <button type="button" class="pickup-method-btn active" onclick="setPickupMethod('pickup', this)">🏪 Store Pickup</button>
-                                <button type="button" class="pickup-method-btn" onclick="setPickupMethod('delivery', this)">🏠 Home Delivery</button>
+                            <div class="form-group">
+                                <label>How would you like to receive your cat?</label>
+                                <input type="hidden" id="pickup_method" value="pickup">
+                                <div class="pickup-method-buttons" style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.3rem">
+                                    <button type="button" class="pickup-method-btn active" onclick="setPickupMethod('pickup', this)">🏪 Store Pickup</button>
+                                    <button type="button" class="pickup-method-btn" onclick="setPickupMethod('delivery', this)">🏠 Home Delivery</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <button type="submit" class="form-submit">Complete Adoption 🐾</button>
-                    </form>
-                </div>`;
+                            <button type="submit" class="form-submit">Complete Adoption 🐾</button>
+                        </form>
+                    </div>`;
+            } catch (err) {
+                content.innerHTML = `<div class="form-card text-center"><h2>⚠️ Oops</h2><p>We couldn't load this adoption form safely. Please go back and try again.</p><a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Back to Cats</a></div>`;
+            }
         }
 
         function handleAdoption(e) {

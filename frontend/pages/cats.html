@@ -369,9 +369,9 @@
                     const cat = cats[slideIndex];
                     grid.innerHTML = `
                         <div class="cat-slide-shell" id="cat-slide-shell">
-                            <button class="cat-slide-arrow left" onclick="moveSlide(-1)">❮</button>
+                            <button class="cat-slide-crescent left" onclick="event.stopPropagation();moveSlide(-1)"></button>
                             ${createCatSlideCard(cat, slideIndex + 1, cats.length)}
-                            <button class="cat-slide-arrow right" onclick="moveSlide(1)">❯</button>
+                            <button class="cat-slide-crescent right" onclick="event.stopPropagation();moveSlide(1)"></button>
                         </div>
                     `;
                     bindSlideSwipe();
@@ -402,18 +402,19 @@
 
         function createCatSlideCard(cat, n, total) {
             return `
-                <div class="cat-slide-card" onclick="window.location.href='cat-detail.html?id=${cat.catid}'">
+                <div class="cat-slide-stage" onclick="window.location.href='cat-detail.html?id=${cat.catid}'">
                     <div class="cat-slide-count">${n} / ${total}</div>
                     <div class="cat-slide-image" style="background:${furColorGradient(cat.fur_color)}">${getCatImageHTML(cat)}</div>
-                    <div class="cat-slide-body">
+                    <div class="cat-slide-titlebar">
                         <h3>${cat.shelter_name}</h3>
-                        <p class="cat-card-breed">${cat.breed}</p>
-                        <div class="cat-card-attrs">
-                            <div class="cat-attr"><span class="attr-icon">⏳</span> ${formatAge(cat.dob)}</div>
-                            <div class="cat-attr"><span class="attr-icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</div>
-                            <div class="cat-attr"><span class="attr-icon">😸</span> ${cat.cattitude}</div>
-                        </div>
+                        <p>${cat.breed}</p>
                     </div>
+                </div>
+                <div class="cat-slide-traits-panel">
+                    <div class="cat-attr"><span class="attr-icon">⏳</span> ${formatAge(cat.dob)}</div>
+                    <div class="cat-attr"><span class="attr-icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</div>
+                    <div class="cat-attr"><span class="attr-icon">😸</span> ${cat.cattitude}</div>
+                    <button class="btn-primary" onclick="event.stopPropagation();window.location.href='cat-detail.html?id=${cat.catid}'">Meet Me →</button>
                 </div>
             `;
         }

@@ -64,7 +64,7 @@ function handleLogout() {
 function getCatImageHTML(cat) {
     const grad = furColorGradient(cat.fur_color);
     const pos = cat.photo_position || 'center';
-    const imageUrl = (cat.photo_url || '').trim();
+    const imageUrl = typeof cat.photo_url === 'string' ? cat.photo_url.trim() : '';
     if (!imageUrl) {
         return `
             <div class="cat-img-placeholder" style="background: ${grad};display:flex;">
@@ -127,5 +127,51 @@ function formatDate(dateStr) {
 // ===== Init footer on every page =====
 document.addEventListener('DOMContentLoaded', () => {
     renderFooter();
+    initBeautyEffects();
 });
+
+function initBeautyEffects() {
+    const revealSelectors = [
+        '.section',
+        '.cat-card',
+        '.cat-list-card',
+        '.cat-slide-stage',
+        '.product-card',
+        '.sparkle-card',
+        '.hiw-card',
+        '.stat-block',
+        '.form-card',
+        '.adoption-card',
+        '.order-card'
+    ];
+
+    const revealTargets = Array.from(document.querySelectorAll(revealSelectors.join(',')));
+    if (revealTargets.length) {
+        revealTargets.forEach(el => el.classList.add('reveal-item'));
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+        revealTargets.forEach(el => observer.observe(el));
+    }
+
+    const tiltTargets = Array.from(document.querySelectorAll('.cat-card, .product-card, .hiw-card, .stat-card'));
+    if (window.matchMedia('(pointer:fine)').matches) {
+        tiltTargets.forEach(el => {
+            el.addEventListener('mousemove', (e) => {
+                const rect = el.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                el.style.transform = `perspective(700px) rotateX(${(-y * 2.2).toFixed(2)}deg) rotateY(${(x * 2.2).toFixed(2)}deg) translateY(-2px)`;
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = '';
+            });
+        });
+    }
+}
 
