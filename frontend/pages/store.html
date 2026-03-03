@@ -19,42 +19,79 @@
 
         <!-- Suggested Products — slideshow carousel -->
         <div class="suggested-bar" id="suggested-bar" style="display:none">
-            <h2 id="suggested-heading">Recommended for your cats ✨</h2>
+            <div class="suggested-heading" id="suggested-heading"></div>
             <div class="carousel-viewport">
                 <div class="carousel-track" id="suggested-products"></div>
+                <button class="carousel-arrow left" id="carousel-prev" onclick="prevSlide()">❮</button>
+                <button class="carousel-arrow right" id="carousel-next" onclick="nextSlide()">❯</button>
             </div>
             <div class="carousel-dots" id="carousel-dots"></div>
         </div>
 
         <!-- All Products Grid -->
-        <div class="store-controls">
-            <div class="store-controls-head">
-                <h2 class="section-title" style="font-size:1.3rem">All Products</h2>
-                <button class="filter-clear-btn" onclick="resetStoreFilters()">Reset Filters</button>
-            </div>
-            <div class="store-filters-row">
-                <div class="store-filter-item">
-                    <label for="food-search">Search</label>
-                    <input id="food-search" type="text" placeholder="Search food name" oninput="setFoodSearch(this.value)">
+        <div class="browse-layout store-layout">
+            <button class="filter-toggle-btn" onclick="toggleStoreFilterSidebar()">☰ Filters</button>
+            <div class="filter-overlay" id="store-filter-overlay" onclick="toggleStoreFilterSidebar()"></div>
+
+            <aside class="filter-sidebar" id="store-filter-sidebar">
+                <div class="filter-sidebar-header">
+                    <h3>Food Filters</h3>
+                    <div>
+                        <button class="filter-clear-btn" onclick="resetStoreFilters()">Clear All</button>
+                        <button class="filter-close" onclick="toggleStoreFilterSidebar()">✕</button>
+                    </div>
                 </div>
-                <div class="store-filter-item">
-                    <label for="diet-filter">Diet</label>
-                    <select id="diet-filter" onchange="setDietFilter(this.value)">
-                        <option value="all">All</option>
-                        <option value="veg">Veg</option>
-                        <option value="non-veg">Non-Veg</option>
-                    </select>
+
+                <div class="filter-group">
+                    <div class="filter-group-header" style="cursor:default">
+                        <label>Search</label>
+                    </div>
+                    <div class="filter-group-body always-open">
+                        <div class="store-search-wrap">
+                            <input id="food-search" class="store-search-input" type="text" placeholder="Search food name" oninput="setFoodSearch(this.value)">
+                        </div>
+                    </div>
                 </div>
-                <div class="store-filter-item">
-                    <label for="stock-filter">Stock</label>
-                    <select id="stock-filter" onchange="setStockFilter(this.value)">
-                        <option value="all">All</option>
-                        <option value="in-stock">In Stock</option>
-                        <option value="low-stock">Low Stock (≤ 3)</option>
-                    </select>
+
+                <div class="filter-group">
+                    <div class="filter-group-header" style="cursor:default">
+                        <label>Diet</label>
+                    </div>
+                    <div class="filter-group-body always-open">
+                        <div class="toggle-group" id="store-diet-filter">
+                            <button class="toggle-btn active" data-val="all" onclick="setDietFilter('all', this)">All</button>
+                            <button class="toggle-btn" data-val="veg" onclick="setDietFilter('veg', this)">🌿 Veg</button>
+                            <button class="toggle-btn" data-val="non-veg" onclick="setDietFilter('non-veg', this)">🍗 Non-Veg</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="store-filter-item">
-                    <label for="store-sort">Sort</label>
+
+                <div class="filter-group">
+                    <div class="filter-group-header" style="cursor:default">
+                        <label>Stock</label>
+                    </div>
+                    <div class="filter-group-body always-open">
+                        <div class="toggle-group" id="store-stock-filter">
+                            <button class="toggle-btn active" data-val="all" onclick="setStockFilter('all', this)">All</button>
+                            <button class="toggle-btn" data-val="in-stock" onclick="setStockFilter('in-stock', this)">In Stock</button>
+                            <button class="toggle-btn" data-val="low-stock" onclick="setStockFilter('low-stock', this)">Low (≤ 3)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group" id="owned-cats-filter-wrap" style="display:none">
+                    <div class="filter-group-header" style="cursor:default">
+                        <label>My Cats</label>
+                    </div>
+                    <div class="filter-group-body always-open">
+                        <div class="chip-group" id="owned-cats-filter"></div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="browse-main store-main">
+                <div class="sort-bar store-sort-bar">
+                    <span class="results-count" id="store-results-count"></span>
                     <select id="store-sort" onchange="setStoreSort(this.value)">
                         <option value="name-asc">Name A-Z</option>
                         <option value="name-desc">Name Z-A</option>
@@ -62,14 +99,11 @@
                         <option value="price-desc">Price High → Low</option>
                     </select>
                 </div>
-            </div>
-            <div class="store-filter-cats" id="owned-cats-filter-wrap" style="display:none">
-                <span class="store-filter-label">Filter by my cats:</span>
-                <div class="chip-group" id="owned-cats-filter"></div>
+                <h2 class="section-title" style="font-size:1.3rem">All Products</h2>
+                <div class="products-grid" id="products-grid"></div>
+                <p id="empty-products" style="display:none;text-align:center;color:var(--text-muted);padding:2rem">No food products available yet. Ask the admin to add some!</p>
             </div>
         </div>
-        <div class="products-grid" id="products-grid"></div>
-        <p id="empty-products" style="display:none;text-align:center;color:var(--text-muted);padding:2rem">No food products available yet. Ask the admin to add some!</p>
     </main>
 
     <div class="floating-actions">
@@ -100,7 +134,7 @@
         </div>
     </div>
 
-    <div class="modal-backdrop" id="checkout-modal" onclick="if(event.target===this)closeCheckoutModal()">
+    <div class="modal-backdrop checkout-modal-backdrop" id="checkout-modal" onclick="if(event.target===this)closeCheckoutModal()">
         <div class="modal">
             <button class="modal-close" onclick="closeCheckoutModal()">✕</button>
             <h2>Complete Checkout</h2>
@@ -119,17 +153,17 @@
                     <span>🚶 Store Visit</span>
                 </label>
             </div>
-            <div id="checkout-address-wrap" class="mt-2">
+            <div id="checkout-address-wrap" class="checkout-field mt-2">
                 <label for="checkout-address">Delivery Address</label>
                 <textarea id="checkout-address" rows="3" placeholder="Enter your delivery address"></textarea>
             </div>
-            <div class="mt-2">
+            <div class="checkout-field mt-2">
                 <label for="checkout-note">Note (optional)</label>
                 <textarea id="checkout-note" rows="2" placeholder="Any instructions for your order"></textarea>
             </div>
-            <div class="mt-3" style="display:flex;gap:.6rem;justify-content:flex-end">
-                <button class="btn btn-ghost" onclick="closeCheckoutModal()">Cancel</button>
-                <button class="btn" onclick="handleCheckout()">Confirm Order</button>
+            <div class="checkout-actions mt-3">
+                <button class="checkout-cancel-btn" onclick="closeCheckoutModal()">Cancel</button>
+                <button class="checkout-btn" onclick="handleCheckout()">Confirm Order</button>
             </div>
         </div>
     </div>
@@ -215,7 +249,10 @@
             else nameLabel = 'your cats';
 
             document.getElementById('suggested-bar').style.display = '';
-            document.getElementById('suggested-heading').innerHTML = `Recommended for ${nameLabel} ✨`;
+            document.getElementById('suggested-heading').innerHTML = `
+                <span class="suggested-heading-label">Recommended for:</span>
+                <span class="suggested-heading-cats">${nameLabel}</span>
+            `;
             const container = document.getElementById('suggested-products');
             const previousIndex = carouselIndex;
             // Build horizontal cards as carousel slides
@@ -233,10 +270,12 @@
                         </div>
                         <div class="sparkle-h-body">
                             <h4>${f.name}</h4>
-                            <span class="food-type-badge ${getFoodDietType(f) === 'veg' ? 'veg' : 'non-veg'}">${getFoodDietType(f) === 'veg' ? '🌿 Veg' : '🍗 Non-Veg'}</span>
+                            <div class="recommended-meta-row">
+                                <span class="food-type-badge ${getFoodDietType(f) === 'veg' ? 'veg' : 'non-veg'}">${getFoodDietType(f) === 'veg' ? '🌿 Veg' : '🍗 Non-Veg'}</span>
+                                ${catTags}
+                            </div>
                             <span class="price">₹${f.price.toFixed(2)}</span>
                             <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
-                            ${catTags}
                             <button class="add-cart-btn" ${f.qty <= 0 ? 'disabled' : ''} onclick="event.stopPropagation();handleAddToCart(${f.foodid}, true)">
                                 ${f.qty > 0 ? 'Add to Cart' : 'Out of Stock'}
                             </button>
@@ -287,6 +326,7 @@
             const foods = getFood();
             const grid = document.getElementById('products-grid');
             const empty = document.getElementById('empty-products');
+            const countEl = document.getElementById('store-results-count');
             const prefMap = getOwnedCatPreferenceMap();
             const ownedCatIds = prefMap.ownedCatIds;
             const filteredFoods = applyStoreFilters(foods);
@@ -294,6 +334,7 @@
             if (filteredFoods.length === 0) {
                 grid.style.display = 'none';
                 empty.style.display = '';
+                countEl.textContent = '0 products shown';
                 empty.textContent = foods.length === 0
                     ? 'No food products available yet. Ask the admin to add some!'
                     : 'No products match your current filters.';
@@ -302,6 +343,7 @@
 
             grid.style.display = '';
             empty.style.display = 'none';
+            countEl.textContent = `${filteredFoods.length} product${filteredFoods.length === 1 ? '' : 's'} shown`;
             grid.innerHTML = filteredFoods.map(f => {
                 const preferringCats = userid ? getCatsThatPreferFood(f.foodid).filter(c => ownedCatIds.has(c.catid)) : [];
                 const catTags = preferringCats.length > 0 
@@ -353,17 +395,35 @@
         }
 
         function setFoodSearch(val) { storeFilters.search = val || ''; renderProducts(); }
-        function setDietFilter(val) { storeFilters.diet = val || 'all'; renderProducts(); }
-        function setStockFilter(val) { storeFilters.stock = val || 'all'; renderProducts(); }
+        function setDietFilter(val, btn) {
+            storeFilters.diet = val || 'all';
+            document.querySelectorAll('#store-diet-filter .toggle-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderProducts();
+        }
+        function setStockFilter(val, btn) {
+            storeFilters.stock = val || 'all';
+            document.querySelectorAll('#store-stock-filter .toggle-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderProducts();
+        }
         function setStoreSort(val) { storeFilters.sort = val || 'name-asc'; renderProducts(); }
         function resetStoreFilters() {
             storeFilters = { search: '', diet: 'all', stock: 'all', sort: 'name-asc', selectedCats: new Set() };
             document.getElementById('food-search').value = '';
-            document.getElementById('diet-filter').value = 'all';
-            document.getElementById('stock-filter').value = 'all';
             document.getElementById('store-sort').value = 'name-asc';
+            const dietDefault = document.querySelector('#store-diet-filter .toggle-btn[data-val="all"]');
+            const stockDefault = document.querySelector('#store-stock-filter .toggle-btn[data-val="all"]');
+            document.querySelectorAll('#store-diet-filter .toggle-btn, #store-stock-filter .toggle-btn').forEach(b => b.classList.remove('active'));
+            if (dietDefault) dietDefault.classList.add('active');
+            if (stockDefault) stockDefault.classList.add('active');
             renderOwnedCatsFilter();
             renderProducts();
+        }
+
+        function toggleStoreFilterSidebar() {
+            document.getElementById('store-filter-sidebar').classList.toggle('open');
+            document.getElementById('store-filter-overlay').classList.toggle('show');
         }
 
         /* ---- Cart Functions ---- */
@@ -453,6 +513,7 @@
                 showToast('Your cart is empty', 'error');
                 return;
             }
+            closeCart();
             document.getElementById('checkout-address').value = (user && user.address) ? user.address : '';
             document.getElementById('checkout-note').value = '';
             document.querySelectorAll('input[name="checkout-method"]').forEach(el => {
@@ -583,15 +644,23 @@
             const track = document.getElementById('suggested-products');
             const slides = track.querySelectorAll('.carousel-slide');
             const dotsContainer = document.getElementById('carousel-dots');
+            const prevBtn = document.getElementById('carousel-prev');
+            const nextBtn = document.getElementById('carousel-next');
             if (slides.length === 0) {
                 dotsContainer.innerHTML = '';
+                if (prevBtn) prevBtn.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'none';
                 return;
             }
+
+            if (prevBtn) prevBtn.style.display = slides.length > 1 ? '' : 'none';
+            if (nextBtn) nextBtn.style.display = slides.length > 1 ? '' : 'none';
 
             // Build dots
             dotsContainer.innerHTML = Array.from(slides).map((_, i) =>
                 `<button class="carousel-dot${i === 0 ? ' active' : ''}" onclick="goToSlide(${i}, true)"></button>`
             ).join('');
+            dotsContainer.style.display = slides.length > 1 ? 'flex' : 'none';
 
             if (typeof preferredIndex === 'number') carouselIndex = preferredIndex;
             if (carouselIndex > slides.length - 1) carouselIndex = slides.length - 1;
@@ -612,6 +681,22 @@
             carouselIndex = i;
             updateCarousel();
             startCarouselTimer();
+        }
+
+        function prevSlide() {
+            const slides = document.querySelectorAll('#suggested-products .carousel-slide');
+            if (slides.length <= 1) return;
+            pauseCarouselByUser();
+            carouselIndex = (carouselIndex - 1 + slides.length) % slides.length;
+            updateCarousel();
+        }
+
+        function nextSlide() {
+            const slides = document.querySelectorAll('#suggested-products .carousel-slide');
+            if (slides.length <= 1) return;
+            pauseCarouselByUser();
+            carouselIndex = (carouselIndex + 1) % slides.length;
+            updateCarousel();
         }
 
         /* ---- Init ---- */
