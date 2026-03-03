@@ -11,10 +11,10 @@
   --nav-h:64px;
 }
 html{scroll-behavior:smooth}
-body{font-family:'Nunito',sans-serif;color:var(--text);background:var(--bg);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+body{font-family:'Playfair Display',Georgia,'Times New Roman',serif;color:var(--text);background:var(--bg);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
-button,input,select,textarea{font-family:inherit;font-size:inherit}
+button,input,select,textarea{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:inherit}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#7a9ab8;box-shadow:0 0 0 3px rgba(91,142,199,.18)}
 
 /* ===== NAVBAR ===== */
@@ -58,7 +58,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#7a9ab8;box-sh
 /* ===== HOME PAGE — ELEGANT / CURSIVE TYPOGRAPHY ===== */
 .home-page .elegant-heading{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:4.5rem;font-weight:900;letter-spacing:-.02em;margin-bottom:.4rem;text-shadow:0 2px 20px rgba(0,0,0,.35);line-height:1.1}
 .home-page .elegant-tagline{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;font-weight:400;font-style:italic;opacity:.9;letter-spacing:.02em;margin-bottom:2rem}
-.home-page .hero-btn{font-family:'Nunito',sans-serif;letter-spacing:.02em;font-size:1rem}
+.home-page .hero-btn{letter-spacing:.02em;font-size:1rem}
 .elegant-section-title{font-family:'Playfair Display',Georgia,serif;font-size:2.2rem;font-weight:700;text-align:center;margin-bottom:2rem;color:var(--text);position:relative}
 .elegant-section-title::after{content:'';display:block;width:60px;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));margin:.6rem auto 0;border-radius:2px}
 

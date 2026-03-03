@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse Cats — Meowtopia 🐾</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
@@ -12,7 +12,6 @@
     <nav class="navbar" id="navbar"></nav>
 
     <main class="section">
-        <h1 class="section-title">Browse Our Cats 🐱</h1>
 
         <div class="browse-layout">
             <!-- Filter toggle — always visible -->
@@ -113,13 +112,17 @@
             <!-- MAIN CONTENT -->
             <div class="browse-main">
                 <div class="sort-bar">
-                    <span class="results-count" id="results-count"></span>
                     <select id="sort-by" onchange="applyFilters()">
-                        <option value="name-asc">Name A-Z</option>
-                        <option value="name-desc">Name Z-A</option>
-                        <option value="age-asc">Youngest First</option>
-                        <option value="age-desc">Oldest First</option>
-                        <option value="breed-asc">Breed A-Z</option>
+                        <option value="age-asc">Age: Youngest First</option>
+                        <option value="age-desc">Age: Oldest First</option>
+                        <option value="date-desc">Date Added: Newest First</option>
+                        <option value="date-asc">Date Added: Oldest First</option>
+                        <option value="gender-asc">Gender: Female First</option>
+                        <option value="gender-desc">Gender: Male First</option>
+                        <option value="breed-asc">Breed: A → Z</option>
+                        <option value="breed-desc">Breed: Z → A</option>
+                        <option value="health-vacc">Vaccination Status</option>
+                        <option value="status-avail">Adoption Status: Available First</option>
                     </select>
                 </div>
 
@@ -253,7 +256,7 @@
 
         /* ---- Apply Filters & Sort ---- */
         function applyFilters() {
-            let cats = getAvailableCats();
+            let cats = getCats();
 
             // Gender
             const gender = getSingleVal('fg-gender');
@@ -292,11 +295,22 @@
             const sort = document.getElementById('sort-by').value;
             cats.sort((a, b) => {
                 switch(sort) {
-                    case 'name-asc': return (a.shelter_name || '').localeCompare(b.shelter_name || '');
-                    case 'name-desc': return (b.shelter_name || '').localeCompare(a.shelter_name || '');
                     case 'age-asc': return getAgeMonths(a.dob) - getAgeMonths(b.dob);
                     case 'age-desc': return getAgeMonths(b.dob) - getAgeMonths(a.dob);
+                    case 'date-desc': return new Date(b.intake_date) - new Date(a.intake_date);
+                    case 'date-asc': return new Date(a.intake_date) - new Date(b.intake_date);
+                    case 'gender-asc': return (a.gender || '').localeCompare(b.gender || '');
+                    case 'gender-desc': return (b.gender || '').localeCompare(a.gender || '');
                     case 'breed-asc': return a.breed.localeCompare(b.breed);
+                    case 'breed-desc': return b.breed.localeCompare(a.breed);
+                    case 'health-vacc': {
+                        const order = {'Vaccinated': 0, 'Healthy': 1, 'Under Treatment': 2};
+                        return (order[a.health_status] ?? 3) - (order[b.health_status] ?? 3);
+                    }
+                    case 'status-avail': {
+                        if (a.is_available === b.is_available) return 0;
+                        return a.is_available ? -1 : 1;
+                    }
                     default: return 0;
                 }
             });
@@ -307,17 +321,14 @@
         function renderCats(cats) {
             const grid = document.getElementById('cat-grid');
             const empty = document.getElementById('empty-state');
-            const count = document.getElementById('results-count');
 
             if (cats.length === 0) {
                 grid.innerHTML = '';
                 grid.style.display = 'none';
                 empty.style.display = 'block';
-                count.textContent = '';
             } else {
                 grid.style.display = '';
                 empty.style.display = 'none';
-                count.textContent = `Showing ${cats.length} adorable cat${cats.length !== 1 ? 's' : ''} 🐾`;
                 grid.innerHTML = cats.map(cat => createCatCard(cat, '../')).join('');
             }
         }

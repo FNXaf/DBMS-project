@@ -15,13 +15,6 @@ function renderNavbar(activePage) {
         let extraLinks = '';
         if (user.role === 'admin') {
             extraLinks = `<a href="${BASE}pages/admin.html" class="${activePage === 'admin' ? 'active' : ''}">🛠️ Admin</a>`;
-        } else {
-            if (isOwner(user.userid)) {
-                extraLinks = `
-                    <a href="${BASE}pages/dashboard.html" class="${activePage === 'dashboard' ? 'active' : ''}">🏡 My Cats</a>
-                    <a href="${BASE}pages/store.html" class="${activePage === 'store' ? 'active' : ''}">🛒 Food Store</a>
-                `;
-            }
         }
         authLinks = `
             ${extraLinks}

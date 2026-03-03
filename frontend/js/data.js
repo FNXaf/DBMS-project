@@ -105,28 +105,6 @@ const MOCK_CATS = [
     }
 ];
 
-const MOCK_FOOD = [
-    { foodid: 1, name: "Cat Milk", qty: 50, price: 120.00, image_url: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=300&h=300&fit=crop", emoji: "🥛" },
-    { foodid: 2, name: "Tuna Bites", qty: 30, price: 85.00, image_url: "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=300&h=300&fit=crop", emoji: "🐟" },
-    { foodid: 3, name: "Dry Kibble", qty: 100, price: 200.00, image_url: "https://images.unsplash.com/photo-1589924749359-e47042052207?w=300&h=300&fit=crop", emoji: "🍖" },
-    { foodid: 4, name: "Salmon Treats", qty: 40, price: 150.00, image_url: "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=300&h=300&fit=crop", emoji: "🍣" },
-    { foodid: 5, name: "Chicken Pâté", qty: 25, price: 95.00, image_url: "https://images.unsplash.com/photo-1589924749359-e47042052207?w=300&h=300&fit=crop", emoji: "🍗" },
-    { foodid: 6, name: "Catnip", qty: 60, price: 45.00, image_url: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=300&h=300&fit=crop", emoji: "🌿" }
-];
-
-const MOCK_CAT_FOOD_PREFS = [
-    { catid: 1, foodid: 1 }, { catid: 1, foodid: 4 },
-    { catid: 2, foodid: 2 }, { catid: 2, foodid: 5 },
-    { catid: 3, foodid: 3 }, { catid: 3, foodid: 2 },
-    { catid: 4, foodid: 1 }, { catid: 4, foodid: 5 },
-    { catid: 5, foodid: 3 }, { catid: 5, foodid: 4 },
-    { catid: 6, foodid: 2 }, { catid: 6, foodid: 3 },
-    { catid: 7, foodid: 1 }, { catid: 7, foodid: 2 },
-    { catid: 8, foodid: 4 }, { catid: 8, foodid: 5 },
-    { catid: 9, foodid: 2 }, { catid: 9, foodid: 4 },
-    { catid: 10, foodid: 1 }, { catid: 10, foodid: 3 }
-];
-
 const MOCK_USERS = [
     {
         userid: 1, full_name: "Admin Meow", email: "admin@meowtopia.com",
@@ -144,18 +122,11 @@ const MOCK_USERS = [
 function initializeData() {
     if (!localStorage.getItem('meowtopia_initialized')) {
         localStorage.setItem('meowtopia_cats', JSON.stringify(MOCK_CATS));
-        localStorage.setItem('meowtopia_food', JSON.stringify(MOCK_FOOD));
-        localStorage.setItem('meowtopia_cat_food_prefs', JSON.stringify(MOCK_CAT_FOOD_PREFS));
         localStorage.setItem('meowtopia_users', JSON.stringify(MOCK_USERS));
         localStorage.setItem('meowtopia_adoptions', JSON.stringify([]));
-        localStorage.setItem('meowtopia_cart', JSON.stringify([]));
-        localStorage.setItem('meowtopia_purchases', JSON.stringify([]));
         localStorage.setItem('meowtopia_next_cat_id', '11');
         localStorage.setItem('meowtopia_next_user_id', '3');
         localStorage.setItem('meowtopia_next_adoption_id', '1');
-        localStorage.setItem('meowtopia_next_food_id', '7');
-        localStorage.setItem('meowtopia_next_cart_id', '1');
-        localStorage.setItem('meowtopia_next_purchase_id', '1');
         localStorage.setItem('meowtopia_initialized', 'true');
     }
 }
@@ -245,56 +216,6 @@ function deleteCat(catid) {
     localStorage.setItem('meowtopia_cats', JSON.stringify(cats));
 }
 
-// ===== Food Name Standardization =====
-function standardizeFoodName(name) {
-    return name.trim().replace(/\s+/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-}
-
-// ===== Food CRUD =====
-function getFood() {
-    return JSON.parse(localStorage.getItem('meowtopia_food')) || [];
-}
-function getFoodById(foodid) {
-    return getFood().find(f => f.foodid === parseInt(foodid));
-}
-function addFood(food) {
-    const foods = getFood();
-    const nextId = parseInt(localStorage.getItem('meowtopia_next_food_id'));
-    food.foodid = nextId;
-    foods.push(food);
-    localStorage.setItem('meowtopia_food', JSON.stringify(foods));
-    localStorage.setItem('meowtopia_next_food_id', String(nextId + 1));
-    return food;
-}
-function updateFood(foodid, updates) {
-    const foods = getFood();
-    const idx = foods.findIndex(f => f.foodid === parseInt(foodid));
-    if (idx !== -1) {
-        foods[idx] = { ...foods[idx], ...updates };
-        localStorage.setItem('meowtopia_food', JSON.stringify(foods));
-        return foods[idx];
-    }
-    return null;
-}
-function deleteFood(foodid) {
-    let foods = getFood();
-    foods = foods.filter(f => f.foodid !== parseInt(foodid));
-    localStorage.setItem('meowtopia_food', JSON.stringify(foods));
-}
-
-// ===== Food Preferences =====
-function getCatFoodPrefs(catid) {
-    const prefs = JSON.parse(localStorage.getItem('meowtopia_cat_food_prefs')) || [];
-    const foods = getFood();
-    return prefs.filter(p => p.catid === parseInt(catid)).map(p => foods.find(f => f.foodid === p.foodid)).filter(Boolean);
-}
-function setCatFoodPrefs(catid, foodIds) {
-    let prefs = JSON.parse(localStorage.getItem('meowtopia_cat_food_prefs')) || [];
-    prefs = prefs.filter(p => p.catid !== parseInt(catid));
-    foodIds.forEach(fid => prefs.push({ catid: parseInt(catid), foodid: parseInt(fid) }));
-    localStorage.setItem('meowtopia_cat_food_prefs', JSON.stringify(prefs));
-}
-
 // ===== Users =====
 function getUsers() { return JSON.parse(localStorage.getItem('meowtopia_users')) || []; }
 function getUserById(userid) { return getUsers().find(u => u.userid === parseInt(userid)); }
@@ -327,86 +248,7 @@ function updateAdoptionStatus(adoptionid, status) {
     return null;
 }
 
-// ===== Cart (Food Store) =====
-function getCart(userid) {
-    const cart = JSON.parse(localStorage.getItem('meowtopia_cart')) || [];
-    return cart.filter(c => c.userid === parseInt(userid));
-}
-function addToCart(userid, foodid, quantity) {
-    const cart = JSON.parse(localStorage.getItem('meowtopia_cart')) || [];
-    const existing = cart.find(c => c.userid === parseInt(userid) && c.foodid === parseInt(foodid));
-    if (existing) { existing.quantity += quantity; }
-    else {
-        const nextId = parseInt(localStorage.getItem('meowtopia_next_cart_id'));
-        cart.push({ cartid: nextId, userid: parseInt(userid), foodid: parseInt(foodid), quantity });
-        localStorage.setItem('meowtopia_next_cart_id', String(nextId + 1));
-    }
-    localStorage.setItem('meowtopia_cart', JSON.stringify(cart));
-}
-function updateCartItem(cartid, quantity) {
-    const cart = JSON.parse(localStorage.getItem('meowtopia_cart')) || [];
-    const idx = cart.findIndex(c => c.cartid === parseInt(cartid));
-    if (idx !== -1) {
-        if (quantity <= 0) cart.splice(idx, 1);
-        else cart[idx].quantity = quantity;
-        localStorage.setItem('meowtopia_cart', JSON.stringify(cart));
-    }
-}
-function removeFromCart(cartid) {
-    let cart = JSON.parse(localStorage.getItem('meowtopia_cart')) || [];
-    cart = cart.filter(c => c.cartid !== parseInt(cartid));
-    localStorage.setItem('meowtopia_cart', JSON.stringify(cart));
-}
-function clearCart(userid) {
-    let cart = JSON.parse(localStorage.getItem('meowtopia_cart')) || [];
-    cart = cart.filter(c => c.userid !== parseInt(userid));
-    localStorage.setItem('meowtopia_cart', JSON.stringify(cart));
-}
-function checkout(userid, options = {}) {
-    const cartItems = getCart(userid);
-    if (cartItems.length === 0) return { error: 'Cart is empty!' };
-    const foods = getFood();
-    let total = 0;
-    const lineItems = [];
-    for (const item of cartItems) {
-        const food = foods.find(f => f.foodid === item.foodid);
-        if (!food) return { error: 'Food item not found.' };
-        if (food.qty < item.quantity) return { error: 'Not enough stock for ' + food.name + '. Available: ' + food.qty };
-        total += food.price * item.quantity;
-        lineItems.push({ foodid: item.foodid, quantity: item.quantity, unit_price: food.price, name: food.name });
-    }
-    for (const item of lineItems) {
-        const food = foods.find(f => f.foodid === item.foodid);
-        food.qty -= item.quantity;
-    }
-    localStorage.setItem('meowtopia_food', JSON.stringify(foods));
-    const purchases = JSON.parse(localStorage.getItem('meowtopia_purchases')) || [];
-    const nextId = parseInt(localStorage.getItem('meowtopia_next_purchase_id'));
-    const purchase = {
-        purchaseid: nextId,
-        userid: parseInt(userid),
-        total_amount: total,
-        purchase_date: new Date().toISOString(),
-        items: lineItems,
-        fulfillment_method: options.fulfillment_method || 'home_delivery',
-        delivery_address: options.delivery_address || '',
-        customer_note: options.customer_note || ''
-    };
-    purchases.push(purchase);
-    localStorage.setItem('meowtopia_purchases', JSON.stringify(purchases));
-    localStorage.setItem('meowtopia_next_purchase_id', String(nextId + 1));
-    clearCart(userid);
-    return { success: true, purchase };
-}
-
-// ===== Suggested Products =====
-function getSuggestedFoods(userid) {
-    const adoptions = getUserAdoptions(userid).filter(a => ['Pending', 'Approved', 'Completed'].includes(a.status));
-    const prefs = JSON.parse(localStorage.getItem('meowtopia_cat_food_prefs')) || [];
-    const catIds = adoptions.map(a => a.catid);
-    const foodIds = [...new Set(prefs.filter(p => catIds.includes(p.catid)).map(p => p.foodid))];
-    return getFood().filter(f => foodIds.includes(f.foodid));
-}
+// ===== Cart (Removed — Food Store no longer part of the system) =====
 
 // ===== Auth =====
 function registerUser(userData) {
@@ -433,16 +275,6 @@ function logoutUser() { localStorage.removeItem('meowtopia_session'); }
 function getCurrentUser() { const d = localStorage.getItem('meowtopia_session'); return d ? JSON.parse(d) : null; }
 function isOwner(userid) { return getUserAdoptions(userid).some(a => ['Approved', 'Completed', 'Pending'].includes(a.status)); }
 function isAdmin() { const u = getCurrentUser(); return u && u.role === 'admin'; }
-
-// ===== Get Cats that prefer a specific food =====
-function getCatsThatPreferFood(foodid) {
-    const prefs = JSON.parse(localStorage.getItem('meowtopia_cat_food_prefs')) || [];
-    const cats = getCats();
-    return prefs
-        .filter(p => p.foodid === parseInt(foodid))
-        .map(p => cats.find(c => c.catid === p.catid))
-        .filter(Boolean);
-}
 
 // ===== Helper: Get color brightness (for contrast) =====
 function getColorBrightness(hexColor) {

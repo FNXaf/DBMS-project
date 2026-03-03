@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cat Details — Meowtopia 🐾</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
 </head>
@@ -38,7 +38,6 @@
         } else {
             document.title = `${cat.shelter_name} — Meowtopia 🐾`;
             const user = getCurrentUser();
-            const foodPrefs = getCatFoodPrefs(cat.catid);
             const age = formatAge(cat.dob);
             const healthClass = cat.health_status === 'Healthy' ? 'healthy' : 'needs-care';
             const furGrad = furColorGradient(cat.fur_color);
@@ -53,14 +52,6 @@
             } else {
                 adoptBtn = `<span class="btn-outline" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;opacity:.6;cursor:not-allowed">Already Adopted 💕</span>`;
             }
-
-            const foodHTML = foodPrefs.length > 0 ? `
-                <div style="margin-top:1.2rem;padding:1rem;background:var(--surface-alt);border-radius:var(--radius)">
-                    <h4>🍽️ Favorite Foods</h4>
-                    <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem">
-                        ${foodPrefs.map(f => `<span class="cat-attr" style="background:var(--primary);color:#fff">${f.name} — ₹${f.price}</span>`).join('')}
-                    </div>
-                </div>` : '';
 
             // Calculate text color based on fur color brightness
             const colorMatch = furGrad.match(/#[\da-f]{6}/i);
@@ -93,8 +84,6 @@
                             <strong>Date of Birth:</strong> ${cat.dob}<br>
                             <strong>Intake Date:</strong> ${formatDate(cat.intake_date)}
                         </p>
-
-                        ${foodHTML}
 
                         <div class="detail-actions">
                             ${adoptBtn}
