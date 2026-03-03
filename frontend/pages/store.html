@@ -27,15 +27,57 @@
         </div>
 
         <!-- All Products Grid -->
-        <h2 class="section-title" style="font-size:1.3rem">All Products</h2>
+        <div class="store-controls">
+            <div class="store-controls-head">
+                <h2 class="section-title" style="font-size:1.3rem">All Products</h2>
+                <button class="filter-clear-btn" onclick="resetStoreFilters()">Reset Filters</button>
+            </div>
+            <div class="store-filters-row">
+                <div class="store-filter-item">
+                    <label for="food-search">Search</label>
+                    <input id="food-search" type="text" placeholder="Search food name" oninput="setFoodSearch(this.value)">
+                </div>
+                <div class="store-filter-item">
+                    <label for="diet-filter">Diet</label>
+                    <select id="diet-filter" onchange="setDietFilter(this.value)">
+                        <option value="all">All</option>
+                        <option value="veg">Veg</option>
+                        <option value="non-veg">Non-Veg</option>
+                    </select>
+                </div>
+                <div class="store-filter-item">
+                    <label for="stock-filter">Stock</label>
+                    <select id="stock-filter" onchange="setStockFilter(this.value)">
+                        <option value="all">All</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock (≤ 3)</option>
+                    </select>
+                </div>
+                <div class="store-filter-item">
+                    <label for="store-sort">Sort</label>
+                    <select id="store-sort" onchange="setStoreSort(this.value)">
+                        <option value="name-asc">Name A-Z</option>
+                        <option value="name-desc">Name Z-A</option>
+                        <option value="price-asc">Price Low → High</option>
+                        <option value="price-desc">Price High → Low</option>
+                    </select>
+                </div>
+            </div>
+            <div class="store-filter-cats" id="owned-cats-filter-wrap" style="display:none">
+                <span class="store-filter-label">Filter by my cats:</span>
+                <div class="chip-group" id="owned-cats-filter"></div>
+            </div>
+        </div>
         <div class="products-grid" id="products-grid"></div>
         <p id="empty-products" style="display:none;text-align:center;color:var(--text-muted);padding:2rem">No food products available yet. Ask the admin to add some!</p>
     </main>
 
-    <!-- Floating Cart Button -->
-    <button class="floating-cart-btn cart-badge" id="cart-fab" onclick="openCart()">
-        🛒 <span class="cart-count" id="cart-count" style="display:none">0</span>
-    </button>
+    <div class="floating-actions">
+        <button class="floating-orders-btn" id="orders-fab" onclick="openOrders()" title="My Orders">📦</button>
+        <button class="floating-cart-btn cart-badge" id="cart-fab" onclick="openCart()" title="Cart">
+            🛒 <span class="cart-count" id="cart-count" style="display:none">0</span>
+        </button>
+    </div>
 
     <!-- Cart Overlay -->
     <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
@@ -54,7 +96,49 @@
                 <span>Total</span>
                 <span id="cart-total-amount">₹0</span>
             </div>
-            <button class="checkout-btn" onclick="handleCheckout()">Checkout 💳</button>
+            <button class="checkout-btn" onclick="openCheckoutModal()">Checkout 💳</button>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="checkout-modal" onclick="if(event.target===this)closeCheckoutModal()">
+        <div class="modal">
+            <button class="modal-close" onclick="closeCheckoutModal()">✕</button>
+            <h2>Complete Checkout</h2>
+            <p class="form-subtitle">Choose how you want to receive your order.</p>
+            <div class="checkout-methods">
+                <label class="checkout-method-option">
+                    <input type="radio" name="checkout-method" value="home_delivery" checked onchange="onCheckoutMethodChange()">
+                    <span>🏠 Home Delivery</span>
+                </label>
+                <label class="checkout-method-option">
+                    <input type="radio" name="checkout-method" value="store_pickup" onchange="onCheckoutMethodChange()">
+                    <span>🏪 Pickup From Store</span>
+                </label>
+                <label class="checkout-method-option">
+                    <input type="radio" name="checkout-method" value="store_visit" onchange="onCheckoutMethodChange()">
+                    <span>🚶 Store Visit</span>
+                </label>
+            </div>
+            <div id="checkout-address-wrap" class="mt-2">
+                <label for="checkout-address">Delivery Address</label>
+                <textarea id="checkout-address" rows="3" placeholder="Enter your delivery address"></textarea>
+            </div>
+            <div class="mt-2">
+                <label for="checkout-note">Note (optional)</label>
+                <textarea id="checkout-note" rows="2" placeholder="Any instructions for your order"></textarea>
+            </div>
+            <div class="mt-3" style="display:flex;gap:.6rem;justify-content:flex-end">
+                <button class="btn btn-ghost" onclick="closeCheckoutModal()">Cancel</button>
+                <button class="btn" onclick="handleCheckout()">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="orders-modal" onclick="if(event.target===this)closeOrders()">
+        <div class="modal">
+            <button class="modal-close" onclick="closeOrders()">✕</button>
+            <h2>My Orders 📦</h2>
+            <div id="orders-list"></div>
         </div>
     </div>
 
@@ -70,6 +154,35 @@
 
         const user = getCurrentUser();
         const userid = user ? user.userid : null;
+        let storeFilters = { search: '', diet: 'all', stock: 'all', sort: 'name-asc', selectedCats: new Set() };
+        let carouselInterval = null;
+        let carouselIndex = 0;
+        let isCarouselPausedByUser = false;
+
+        function getOwnedCats() {
+            if (!userid) return [];
+            const adoptions = getUserAdoptions(userid).filter(a => ['Pending','Approved','Completed'].includes(a.status));
+            const seen = new Set();
+            return adoptions.map(a => getCatById(a.catid)).filter(c => {
+                if (!c || seen.has(c.catid)) return false;
+                seen.add(c.catid);
+                return true;
+            });
+        }
+
+        function getFoodDietType(food) {
+            const n = (food.name || '').toLowerCase();
+            if (n.includes('catnip') || n.includes('milk')) return 'veg';
+            return 'non-veg';
+        }
+
+        function getOwnedCatPreferenceMap() {
+            const ownedCatIds = new Set(getOwnedCats().map(c => c.catid));
+            return {
+                ownedCatIds,
+                byFood: foodid => getCatsThatPreferFood(foodid).filter(c => ownedCatIds.has(c.catid))
+            };
+        }
 
         /* ---- Toast helper ---- */
         function showToast(msg, type) {
@@ -104,11 +217,12 @@
             document.getElementById('suggested-bar').style.display = '';
             document.getElementById('suggested-heading').innerHTML = `Recommended for ${nameLabel} ✨`;
             const container = document.getElementById('suggested-products');
+            const previousIndex = carouselIndex;
             // Build horizontal cards as carousel slides
             container.innerHTML = suggested.map(f => {
                 const preferringCats = getCatsThatPreferFood(f.foodid).filter(c => ownedCatIds.has(c.catid));
                 const catTags = preferringCats.length > 0 
-                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span>${c.name || c.shelter_name || 'Cat'}</span>`).join('')}</div>`
+                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span class="food-cat-chip">${c.name || c.shelter_name || 'Cat'}</span>`).join('')}</div>`
                     : '';
                 return `
                 <div class="carousel-slide">
@@ -119,10 +233,11 @@
                         </div>
                         <div class="sparkle-h-body">
                             <h4>${f.name}</h4>
+                            <span class="food-type-badge ${getFoodDietType(f) === 'veg' ? 'veg' : 'non-veg'}">${getFoodDietType(f) === 'veg' ? '🌿 Veg' : '🍗 Non-Veg'}</span>
                             <span class="price">₹${f.price.toFixed(2)}</span>
                             <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
                             ${catTags}
-                            <button class="add-cart-btn" ${f.qty <= 0 ? 'disabled' : ''} onclick="event.stopPropagation();handleAddToCart(${f.foodid})">
+                            <button class="add-cart-btn" ${f.qty <= 0 ? 'disabled' : ''} onclick="event.stopPropagation();handleAddToCart(${f.foodid}, true)">
                                 ${f.qty > 0 ? 'Add to Cart' : 'Out of Stock'}
                             </button>
                         </div>
@@ -131,7 +246,40 @@
             `}).join('');
 
             // Init carousel auto-scroll
-            initCarousel();
+            initCarousel(previousIndex);
+        }
+
+        function applyStoreFilters(foods) {
+            const prefMap = getOwnedCatPreferenceMap();
+            let filtered = [...foods];
+
+            if (storeFilters.search.trim()) {
+                const q = storeFilters.search.trim().toLowerCase();
+                filtered = filtered.filter(f => f.name.toLowerCase().includes(q));
+            }
+
+            if (storeFilters.diet !== 'all') {
+                filtered = filtered.filter(f => getFoodDietType(f) === storeFilters.diet);
+            }
+
+            if (storeFilters.stock === 'in-stock') {
+                filtered = filtered.filter(f => f.qty > 0);
+            } else if (storeFilters.stock === 'low-stock') {
+                filtered = filtered.filter(f => f.qty > 0 && f.qty <= 3);
+            }
+
+            if (storeFilters.selectedCats.size > 0) {
+                filtered = filtered.filter(f => prefMap.byFood(f.foodid).some(c => storeFilters.selectedCats.has(c.catid)));
+            }
+
+            filtered.sort((a, b) => {
+                if (storeFilters.sort === 'name-asc') return a.name.localeCompare(b.name);
+                if (storeFilters.sort === 'name-desc') return b.name.localeCompare(a.name);
+                if (storeFilters.sort === 'price-asc') return a.price - b.price;
+                if (storeFilters.sort === 'price-desc') return b.price - a.price;
+                return 0;
+            });
+            return filtered;
         }
 
         /* ---- Render All Products ---- */
@@ -139,19 +287,25 @@
             const foods = getFood();
             const grid = document.getElementById('products-grid');
             const empty = document.getElementById('empty-products');
+            const prefMap = getOwnedCatPreferenceMap();
+            const ownedCatIds = prefMap.ownedCatIds;
+            const filteredFoods = applyStoreFilters(foods);
 
-            if (foods.length === 0) {
+            if (filteredFoods.length === 0) {
                 grid.style.display = 'none';
                 empty.style.display = '';
+                empty.textContent = foods.length === 0
+                    ? 'No food products available yet. Ask the admin to add some!'
+                    : 'No products match your current filters.';
                 return;
             }
 
             grid.style.display = '';
             empty.style.display = 'none';
-            grid.innerHTML = foods.map(f => {
-                const preferringCats = getCatsThatPreferFood(f.foodid);
+            grid.innerHTML = filteredFoods.map(f => {
+                const preferringCats = userid ? getCatsThatPreferFood(f.foodid).filter(c => ownedCatIds.has(c.catid)) : [];
                 const catTags = preferringCats.length > 0 
-                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span>${c.shelter_name || c.name || 'Cat'}</span>`).join('')}</div>`
+                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span class="food-cat-chip">${c.name || c.shelter_name || 'Cat'}</span>`).join('')}</div>`
                     : '';
                 return `
                 <div class="product-card">
@@ -161,6 +315,7 @@
                     </div>
                     <div class="product-card-body">
                         <h4>${f.name}</h4>
+                        <span class="food-type-badge ${getFoodDietType(f) === 'veg' ? 'veg' : 'non-veg'}">${getFoodDietType(f) === 'veg' ? '🌿 Veg' : '🍗 Non-Veg'}</span>
                         <span class="price">₹${f.price.toFixed(2)}</span>
                         <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
                         ${catTags}
@@ -172,14 +327,54 @@
             `}).join('');
         }
 
+        function renderOwnedCatsFilter() {
+            const wrap = document.getElementById('owned-cats-filter-wrap');
+            const container = document.getElementById('owned-cats-filter');
+            const ownedCats = getOwnedCats();
+            if (ownedCats.length === 0) {
+                wrap.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+            wrap.style.display = '';
+            container.innerHTML = ownedCats.map(cat => {
+                const active = storeFilters.selectedCats.has(cat.catid) ? ' active' : '';
+                const label = cat.name || cat.shelter_name || 'Cat';
+                return `<button class="chip${active}" onclick="toggleOwnedCatFilter(${cat.catid})">${label}</button>`;
+            }).join('');
+        }
+
+        function toggleOwnedCatFilter(catid) {
+            const id = parseInt(catid);
+            if (storeFilters.selectedCats.has(id)) storeFilters.selectedCats.delete(id);
+            else storeFilters.selectedCats.add(id);
+            renderOwnedCatsFilter();
+            renderProducts();
+        }
+
+        function setFoodSearch(val) { storeFilters.search = val || ''; renderProducts(); }
+        function setDietFilter(val) { storeFilters.diet = val || 'all'; renderProducts(); }
+        function setStockFilter(val) { storeFilters.stock = val || 'all'; renderProducts(); }
+        function setStoreSort(val) { storeFilters.sort = val || 'name-asc'; renderProducts(); }
+        function resetStoreFilters() {
+            storeFilters = { search: '', diet: 'all', stock: 'all', sort: 'name-asc', selectedCats: new Set() };
+            document.getElementById('food-search').value = '';
+            document.getElementById('diet-filter').value = 'all';
+            document.getElementById('stock-filter').value = 'all';
+            document.getElementById('store-sort').value = 'name-asc';
+            renderOwnedCatsFilter();
+            renderProducts();
+        }
+
         /* ---- Cart Functions ---- */
-        function handleAddToCart(foodid) {
+        function handleAddToCart(foodid, fromSuggested = false) {
             if (!userid) return;
             addToCart(userid, foodid, 1);
             showToast('Added to cart!', 'success');
+            if (fromSuggested) pauseCarouselByUser();
             renderCart();
             renderProducts();
-            renderSuggested();
+            if (!fromSuggested) renderSuggested();
         }
 
         function renderCart() {
@@ -251,43 +446,158 @@
             document.getElementById('cart-overlay').classList.remove('show');
         }
 
+        function openCheckoutModal() {
+            if (!userid) return;
+            const items = getCart(userid);
+            if (items.length === 0) {
+                showToast('Your cart is empty', 'error');
+                return;
+            }
+            document.getElementById('checkout-address').value = (user && user.address) ? user.address : '';
+            document.getElementById('checkout-note').value = '';
+            document.querySelectorAll('input[name="checkout-method"]').forEach(el => {
+                el.checked = el.value === 'home_delivery';
+            });
+            onCheckoutMethodChange();
+            document.getElementById('checkout-modal').classList.add('show');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.remove('show');
+        }
+
+        function onCheckoutMethodChange() {
+            const selected = document.querySelector('input[name="checkout-method"]:checked');
+            const method = selected ? selected.value : 'home_delivery';
+            const addressWrap = document.getElementById('checkout-address-wrap');
+            addressWrap.style.display = method === 'home_delivery' ? '' : 'none';
+        }
+
+        function getFulfillmentLabel(method) {
+            if (method === 'store_pickup') return 'Store Pickup';
+            if (method === 'store_visit') return 'Store Visit';
+            return 'Home Delivery';
+        }
+
         function handleCheckout() {
             if (!userid) return;
-            const result = checkout(userid);
+            const selected = document.querySelector('input[name="checkout-method"]:checked');
+            const method = selected ? selected.value : 'home_delivery';
+            const address = document.getElementById('checkout-address').value.trim();
+            const note = document.getElementById('checkout-note').value.trim();
+
+            if (method === 'home_delivery' && !address) {
+                showToast('Please enter delivery address', 'error');
+                return;
+            }
+
+            const result = checkout(userid, {
+                fulfillment_method: method,
+                delivery_address: method === 'home_delivery' ? address : '',
+                customer_note: note
+            });
             if (result.success) {
-                showToast('🎉 Order placed successfully!', 'success');
+                showToast(`🎉 Order placed (${getFulfillmentLabel(method)})`, 'success');
+                closeCheckoutModal();
                 closeCart();
                 renderCart();
                 renderProducts();
                 renderSuggested();
+                renderOwnedCatsFilter();
             } else {
                 showToast('❌ ' + (result.error || 'Checkout failed'), 'error');
             }
         }
 
+        function getUserPurchases(uid) {
+            const purchases = JSON.parse(localStorage.getItem('meowtopia_purchases')) || [];
+            return purchases.filter(p => p.userid === parseInt(uid)).sort((a, b) => new Date(b.purchase_date) - new Date(a.purchase_date));
+        }
+
+        function renderOrders() {
+            const list = document.getElementById('orders-list');
+            const purchases = getUserPurchases(userid);
+            if (purchases.length === 0) {
+                list.innerHTML = '<p class="text-center" style="color:var(--text-light)">No orders yet.</p>';
+                return;
+            }
+            list.innerHTML = purchases.map(order => {
+                const date = new Date(order.purchase_date).toLocaleString();
+                const methodLabel = getFulfillmentLabel(order.fulfillment_method || 'home_delivery');
+                const items = (order.items || []).map(it => `<li>${it.name} × ${it.quantity}</li>`).join('');
+                const addressBlock = order.fulfillment_method === 'home_delivery' && order.delivery_address
+                    ? `<p><strong>Address:</strong> ${order.delivery_address}</p>`
+                    : '';
+                const noteBlock = order.customer_note
+                    ? `<p><strong>Note:</strong> ${order.customer_note}</p>`
+                    : '';
+                return `
+                    <div class="order-card">
+                        <div class="order-card-head">
+                            <strong>Order #${order.purchaseid}</strong>
+                            <span>${date}</span>
+                        </div>
+                        <p><strong>Method:</strong> ${methodLabel}</p>
+                        ${addressBlock}
+                        ${noteBlock}
+                        <ul class="order-items">${items}</ul>
+                        <p class="order-total">Total: ₹${Number(order.total_amount || 0).toFixed(2)}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openOrders() {
+            if (!userid) {
+                showToast('Please login to view orders', 'error');
+                return;
+            }
+            renderOrders();
+            document.getElementById('orders-modal').classList.add('show');
+        }
+
+        function closeOrders() {
+            document.getElementById('orders-modal').classList.remove('show');
+        }
+
         /* ---- Carousel auto-scroll for suggested ---- */
-        let carouselInterval = null;
-        let carouselIndex = 0;
+        function pauseCarouselByUser() {
+            isCarouselPausedByUser = true;
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+            }
+        }
 
-        function initCarousel() {
-            const track = document.getElementById('suggested-products');
-            const slides = track.querySelectorAll('.carousel-slide');
-            const dotsContainer = document.getElementById('carousel-dots');
-            if (slides.length <= 1) return;
-
-            // Build dots
-            dotsContainer.innerHTML = Array.from(slides).map((_, i) =>
-                `<button class="carousel-dot${i === 0 ? ' active' : ''}" onclick="goToSlide(${i})"></button>`
-            ).join('');
-
-            carouselIndex = 0;
-            updateCarousel();
-            // Auto-advance every 4s
+        function startCarouselTimer() {
+            const slides = document.querySelectorAll('#suggested-products .carousel-slide');
+            if (slides.length <= 1 || isCarouselPausedByUser) return;
             if (carouselInterval) clearInterval(carouselInterval);
             carouselInterval = setInterval(() => {
                 carouselIndex = (carouselIndex + 1) % slides.length;
                 updateCarousel();
             }, 4000);
+        }
+
+        function initCarousel(preferredIndex) {
+            const track = document.getElementById('suggested-products');
+            const slides = track.querySelectorAll('.carousel-slide');
+            const dotsContainer = document.getElementById('carousel-dots');
+            if (slides.length === 0) {
+                dotsContainer.innerHTML = '';
+                return;
+            }
+
+            // Build dots
+            dotsContainer.innerHTML = Array.from(slides).map((_, i) =>
+                `<button class="carousel-dot${i === 0 ? ' active' : ''}" onclick="goToSlide(${i}, true)"></button>`
+            ).join('');
+
+            if (typeof preferredIndex === 'number') carouselIndex = preferredIndex;
+            if (carouselIndex > slides.length - 1) carouselIndex = slides.length - 1;
+            if (carouselIndex < 0) carouselIndex = 0;
+            updateCarousel();
+            startCarouselTimer();
         }
 
         function updateCarousel() {
@@ -297,22 +607,27 @@
             dots.forEach((d, i) => d.classList.toggle('active', i === carouselIndex));
         }
 
-        function goToSlide(i) {
+        function goToSlide(i, userInitiated) {
+            if (userInitiated) pauseCarouselByUser();
             carouselIndex = i;
             updateCarousel();
-            // Reset timer
-            if (carouselInterval) clearInterval(carouselInterval);
-            const slides = document.querySelectorAll('#suggested-products .carousel-slide');
-            carouselInterval = setInterval(() => {
-                carouselIndex = (carouselIndex + 1) % slides.length;
-                updateCarousel();
-            }, 4000);
+            startCarouselTimer();
         }
 
         /* ---- Init ---- */
         renderSuggested();
+        renderOwnedCatsFilter();
         renderProducts();
         renderCart();
+
+        const suggestedBar = document.getElementById('suggested-bar');
+        if (suggestedBar) {
+            suggestedBar.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.sparkle-card') || e.target.closest('.add-cart-btn')) {
+                    pauseCarouselByUser();
+                }
+            });
+        }
     </script>
 </body>
 </html>

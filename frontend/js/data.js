@@ -362,7 +362,7 @@ function clearCart(userid) {
     cart = cart.filter(c => c.userid !== parseInt(userid));
     localStorage.setItem('meowtopia_cart', JSON.stringify(cart));
 }
-function checkout(userid) {
+function checkout(userid, options = {}) {
     const cartItems = getCart(userid);
     if (cartItems.length === 0) return { error: 'Cart is empty!' };
     const foods = getFood();
@@ -382,7 +382,16 @@ function checkout(userid) {
     localStorage.setItem('meowtopia_food', JSON.stringify(foods));
     const purchases = JSON.parse(localStorage.getItem('meowtopia_purchases')) || [];
     const nextId = parseInt(localStorage.getItem('meowtopia_next_purchase_id'));
-    const purchase = { purchaseid: nextId, userid: parseInt(userid), total_amount: total, purchase_date: new Date().toISOString(), items: lineItems };
+    const purchase = {
+        purchaseid: nextId,
+        userid: parseInt(userid),
+        total_amount: total,
+        purchase_date: new Date().toISOString(),
+        items: lineItems,
+        fulfillment_method: options.fulfillment_method || 'home_delivery',
+        delivery_address: options.delivery_address || '',
+        customer_note: options.customer_note || ''
+    };
     purchases.push(purchase);
     localStorage.setItem('meowtopia_purchases', JSON.stringify(purchases));
     localStorage.setItem('meowtopia_next_purchase_id', String(nextId + 1));
