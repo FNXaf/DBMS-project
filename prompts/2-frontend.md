@@ -19,14 +19,18 @@ If you need clarification on overall system behavior, refer to the **Main System
 ## Pages & Components to Build
 
 ### 1. Home / Landing Page
-- **Hero section with background video:** A full-bleed, autoplaying, muted, looping background video (similar to The French Workshop bakery website style). The video should cover the entire hero viewport with `object-fit: cover`, have a poster/fallback image, and use `autoplay muted loop playsinline` attributes. **Video overlay is semi-transparent (8-10% opacity) with a subtle blue-purple gradient to keep videos visible and vibrant.** Overlay text with the tagline (e.g., "Find your purrfect companion at Meowtopia") and a CTA button. The "Meowtopia" heading and "Where every whisker finds a home" tagline animate on page load with staggered letter-by-letter entrance animations for visual impact.
-- **"Our Story" section:** A three-column layout with text on the left, a cat image (80% opaque, 20% transparent) centered with rounded corners and subtle shadow, and text on the right. The image creates visual separation between the two text blocks. Image is static (no video).
+- **Hero section with background video:** A full-bleed, autoplaying, muted, looping background video (similar to The French Workshop bakery website style). The video should cover the entire hero viewport with `object-fit: cover`, have a poster/fallback image, and use `autoplay muted loop playsinline` attributes. **Use fast transitions with a subtle motion-blur feel between clips** (not slow fade-only). Overlay remains semi-transparent (8-10% opacity) with a subtle blue-purple gradient to keep videos visible and vibrant. Overlay text with the tagline (e.g., "Find your purrfect companion at Meowtopia") and a CTA button. The "Meowtopia" heading and "Where every whisker finds a home" tagline animate on page load with staggered letter-by-letter entrance animations for visual impact.
+- **"Our Story" section:** Use a cat image as the section background with readable text overlay. Keep a **small vertical gap** between hero and this section, and keep the image slightly more visible (lighter overlay than before).
 - A featured/random selection of cats available for adoption (cards)
 - Call to action: Browse Cats, Sign Up
 - **"Reset Data" button** at the bottom of the page -- clears all `localStorage` mock data and reinitializes defaults. This is for development convenience while using the static frontend. Keep it **isolated and easy to remove** when the real backend is connected (e.g., wrap in a clearly-marked section/function). Style it subtly -- small, muted color, not prominent.
 - **Footer:** Keep it simple -- brand name and a short tagline. Do **NOT** include any text like "Made with ... as a DBMS Academic Project" or any other credit line that reveals the project is AI-generated or academic.
 
 ### 2. Cat Listings Page (Browse Cats)
+- **View mode switcher (top-right):** Add a "View As" button with a changing icon and 3 options:
+  - **Slide** (default) -- shows one cat card at a time with swipe gestures and hover-revealed side arrows
+  - **Tiles** -- current grid card view
+  - **List** -- horizontal list-style cards
 - Grid of cat cards. **Card design:**
   - **Title:** The cat's `shelter_name` (admin-assigned temporary name) -- this is the primary label on each card. Do NOT show "Unnamed Kitty" -- almost all cats are unnamed initially, so it's redundant.
   - **Photo** of the cat. All cat images must have a **fixed aspect ratio** (4:3) -- the image area has a fixed height via `padding-top:75%` so that different image dimensions never distort the card layout.
@@ -66,7 +70,7 @@ If you need clarification on overall system behavior, refer to the **Main System
 Fields:
 - User's name, phone, address (pre-filled if available)
 - Name they want to give the cat (this becomes the cat's permanent name). **This field is optional** -- if left blank, the shelter name is used as the cat's name. Placeholder text should indicate this (e.g., "Leave blank to keep '[shelter_name]'").
-- Pickup method: `Store Pickup` or `Home Delivery` (radio button or toggle)
+- Pickup method: `Store Pickup` or `Home Delivery` shown as **clickable option boxes/buttons** (not tiny radio dots)
 - Submit button: "Complete Adoption"
 
 After submission -- show a **cute popup/modal** with a congratulatory message (e.g., "Congratulations! [cat name] is officially yours!"). After closing the popup, redirect to the cats page or home page.
@@ -76,7 +80,7 @@ After submission -- show a **cute popup/modal** with a congratulatory message (e
 - Login has email + password
 - Register has: name, email, password, phone
 - Show validation errors inline
-- After login, redirect to previous page or home
+- After login, redirect to the exact page the user came from (especially adopt flow), else fallback to role-based default/home
 
 ### 6. Admin Panel (Admin users only)
 - Separate login route or role-based redirect after login
