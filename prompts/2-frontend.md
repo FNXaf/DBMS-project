@@ -8,7 +8,7 @@ If you need clarification on overall system behavior, refer to the **Main System
 ---
 
 ## Design Vibe
-- **Color palette:** Soft pastels — creamy whites, warm beiges, dusty rose, soft lavender, mint
+- **Color palette:** Blue-grey tones — slate blue (`#5b8ec7`), muted blue-grey (`#7a9ab8`), light blue-grey background (`#f0f5fa`), teal accents (`#5db8a7`). Soft, professional, calming aesthetic.
 - **Typography:** Friendly and readable (e.g., Poppins, Nunito, or similar Google Fonts)
 - **UI style:** Rounded cards, soft shadows, cozy and welcoming — not corporate or harsh
 - **Cat-themed touches:** Paw print icons, subtle cat-ear elements, fun micro-copy
@@ -19,7 +19,8 @@ If you need clarification on overall system behavior, refer to the **Main System
 ## Pages & Components to Build
 
 ### 1. 🏠 Home / Landing Page
-- **Hero section with background video:** A full-bleed, autoplaying, muted, looping background video (similar to The French Workshop bakery website style). The video should cover the entire hero viewport with `object-fit: cover`, have a poster/fallback image, and use `autoplay muted loop playsinline` attributes. Overlay text with the tagline (e.g., _"Find your purrfect companion at Meowtopia"_) and a CTA button.
+- **Hero section with background video:** A full-bleed, autoplaying, muted, looping background video (similar to The French Workshop bakery website style). The video should cover the entire hero viewport with `object-fit: cover`, have a poster/fallback image, and use `autoplay muted loop playsinline` attributes. **Video overlay is semi-transparent (8-10% opacity) with a subtle blue-purple gradient to keep videos visible and vibrant.** Overlay text with the tagline (e.g., _"Find your purrfect companion at Meowtopia"_) and a CTA button. The "Meowtopia" heading and "Where every whisker finds a home" tagline animate on page load with staggered letter-by-letter entrance animations for visual impact.
+- **"Our Story" section:** A three-column layout with text on the left, a cat image (80% opaque, 20% transparent) centered with rounded corners and subtle shadow, and text on the right. The image creates visual separation between the two text blocks. Image is static (no video).
 - A featured/random selection of cats available for adoption (cards)
 - Call to action: Browse Cats, Sign Up
 - **"Reset Data" button** at the bottom of the page — clears all `localStorage` mock data and reinitializes defaults. This is for development convenience while using the static frontend. Keep it **isolated and easy to remove** when the real backend is connected (e.g., wrap in a clearly-marked section/function). Style it subtly — small, muted color, not prominent.
@@ -38,7 +39,7 @@ If you need clarification on overall system behavior, refer to the **Main System
 - **Filter button** that opens a **smart sidebar** (slide-in from the left, popup-style — hidden by default, not persistent). Filter options:
   - **Gender:** Always visible (not collapsible). Single-select toggle. Clicking one option selects it; clicking the other switches; clicking the already-selected one deselects (clears the gender filter). Think toggle buttons, not radio buttons — the user must be able to clear the selection. **Male button turns blue when active; Female button turns pink when active** (using `data-val` attribute-based CSS selectors).
   - **Age:** Always visible (not collapsible). **Dual-handle range slider** — two `<input type="range">` overlaid on a single track, with a colored fill between the two handles. Displays the current min/max values below. Range: 0–240 months. Labels auto-format to months or years.
-  - **Fur Color:** Multi-select (toggleable chips). User can pick multiple. **Collapsible accordion** — header with ▸/▾ chevron icon (decent sized, not tiny), body hidden by default. Click header to expand/collapse. **When a fur-color chip is active, its background uses the fur-color gradient** (from `furColorGradient()`) for a visual color preview.
+  - **Fur Color:** Multi-select (toggleable chips). User can pick multiple. **Collapsible accordion** — header with ▸/▾ chevron icon (decent sized, not tiny), body hidden by default. Click header to expand/collapse. **When a fur-color chip is active, its background uses the fur-color gradient** (from `furColorGradient()`) for a visual color preview. **Text color in active chips is adaptive:** if the gradient background is light, text is black; if dark, text is white. This prevents white text from becoming invisible on light-colored backgrounds like "White" or "Cream".
   - **Breed:** Multi-select. Collapsible accordion.
   - **Cattitude:** Multi-select. Collapsible accordion.
   - **Health Status:** Single-select toggle (same behavior as gender). Collapsible accordion. Maps "Healthy" filter to `Healthy` + `Vaccinated` statuses; "Needs Care" filter to `Under Treatment` status.
@@ -50,7 +51,8 @@ If you need clarification on overall system behavior, refer to the **Main System
 
 ### 3. 🐱 Cat Detail Page
 - Full photo of the cat
-- All details: **shelter_name** (as heading), breed, **age (derived from DOB, shown in a readable format like "7 months" or "2 years, 3 months")**, gender, fur color, cattitude, health status, intake date
+- All details: **shelter_name** (as heading), breed, **age (derived from DOB, shown in a readable format like "7 months" or "2 years, 3 months")**, gender, fur color (with adaptive text color based on background brightness), cattitude, health status, intake date
+  - **Fur color attribute:** Displays with the fur-color gradient as background. Text color is automatically determined: if the background is light (brightness > 128), text is black; if dark, text is white. This ensures readability regardless of fur color.
 - "Adopt Me" button (only visible to logged-in users; guests see "Login to Adopt")
 
 ### 4. 📝 Adoption Form Page (Logged-in users only)
@@ -93,12 +95,13 @@ A dedicated page for cat owners to purchase food. Layout (top to bottom):
 #### Suggested Products Bar (Top Section)
 - Displays food items that match the food preferences of the owner's adopted cats. If the owner has multiple cats, aggregate all their preferences.
 - **Visual treatment:** This section must look special — use sparkle effects, four-point star decorations, a subtle glow, or shimmering animations. The heading should display **cat names** (using the cat's given name after adoption, falling back to shelter_name): if the owner has 1–3 adopted cats, show their names (e.g., _"Recommended for Snowball, Whiskers & Mittens ✨"_). If more than 3, use _"Recommended for your cats ✨"_. The goal: the UI should make the user feel like these are smart, personalized recommendations — **without** ever explicitly saying "AI" anywhere.
-- **Carousel layout:** Suggested products are displayed as **horizontal cards** in an auto-scrolling carousel (slideshow style, like the review section from The French Workshop reference). One card visible at a time, slides left-to-right automatically every 4 seconds, with navigation dots below. Each card shows: food image, name, price, stock, and Add to Cart button side-by-side.
+- **Carousel layout:** Suggested products are displayed as **horizontal cards** in an auto-scrolling carousel (slideshow style, like the review section from The French Workshop reference). One card visible at a time, slides left-to-right automatically every 4 seconds, with navigation dots below. Each card shows: food image, name, price, stock, cat preference tags, and Add to Cart button. **Cat preference tags** display the names of cats that prefer this food item (e.g., "Snowball", "Whiskers"), helping users see why this food is recommended — creates a personal touch. Tags have semi-transparent backgrounds with appropriate text color for readability.
 - If the owner has no food preferences set for their cats, this section simply doesn't appear.
 
 #### All Products Grid
 - Standard e-commerce-style product cards: **food image** (with emoji fallback on error), food name, price, stock left. The grid should be **responsive** — distribute columns based on screen width (e.g., 4–5 columns on wide screens via `repeat(auto-fill, minmax(180px, 1fr))`).
 - Food items in mock data include `image_url` and `emoji` fields. If the image fails to load, fall back to the emoji.
+- **Cat preference tags** appear on each food card showing which cats prefer this food, filling visual space and providing context. This reduces empty card space and improves user engagement.
 - Each card has an **"Add to Cart"** button with a quantity selector (or defaults to 1).
 - If an item is out of stock (`qty === 0`), show it as disabled/unavailable.
 
@@ -120,10 +123,13 @@ A dedicated page for cat owners to purchase food. Layout (top to bottom):
   - **Add Cat Form:** All cat attributes including:
     - `shelter_name` — **required, unique** (show validation if duplicate)
     - `dob` — **required** (date picker, NOT a text age field)
+    - `intake_date` — **auto-filled with today's date** if left blank, allowing admins to skip this field for efficiency
     - Photo upload (file input)
-    - All other attributes (breed, fur_color, gender, health_status, cattitude, etc.)
+    - **Cattitude dropdown:** Displays all existing cattitude values from cats in the database, allowing admin to select from existing personalities. If admin wants to add a new one, a button toggles to a text input field. New cattitude values are automatically capitalized (e.g., "playFul" becomes "Playful").
+    - All other attributes (breed, fur_color, gender, health_status, etc.)
   - **Adoption Requests:** Table of all adoptions with status (Pending / Approved / Completed)
   - **Food Management:** Table of food items; Add/Edit/Delete; inventory quantity management
+    - **Edit Food Form:** Includes image upload capability — admins can upload a new food image when editing an existing food item
 
 ---
 

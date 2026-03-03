@@ -41,7 +41,7 @@
         <!-- About Meowtopia -->
         <section class="section home-about">
             <h2 class="elegant-section-title">Our Story</h2>
-            <div class="about-grid">
+            <div class="about-content">
                 <div class="about-text">
                     <p>
                         Nestled in the quiet outskirts of the city, <strong>Meowtopia</strong> began as a humble dream in 2018 — 
@@ -134,6 +134,24 @@
     <script src="js/app.js"></script>
     <script>
         renderNavbar('home');
+
+        // ===== ANIMATIONS ===== 
+        window.addEventListener('load', () => {
+            const heading = document.querySelector('.elegant-heading');
+            const tagline = document.querySelector('.elegant-tagline');
+            const btn = document.querySelector('.hero-btn');
+            
+            if (heading) {
+                heading.classList.add('animate');
+                // Animate each character in heading
+                const text = heading.textContent;
+                heading.innerHTML = text.split('').map((char, i) => 
+                    `<span style="display:inline-block;animation:heading-emerge .8s ease-out ${i*0.04}s forwards;opacity:0">${char}</span>`
+                ).join('');
+            }
+            if (tagline) tagline.classList.add('animate');
+            if (btn) btn.classList.add('animate');
+        });
 
         /* ---- Stats ---- */
         const available = getAvailableCats();

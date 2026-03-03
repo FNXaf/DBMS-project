@@ -91,7 +91,12 @@
                     </div>
                     <div class="form-group">
                         <label>Cattitude (Personality)</label>
-                        <input type="text" id="cat-cattitude" placeholder="e.g., Playful, Sassy, Chill">
+                        <select id="cat-cattitude" required style="margin-bottom:.4rem">
+                            <option value="">Select or add new</option>
+                        </select>
+                        <input type="text" id="cat-cattitude-new" placeholder="Add new cattitude..." style="display:none;margin-top:.4rem">
+                        <small id="cattitude-hint" style="color:var(--text-muted);display:block;margin-top:.3rem">Pick from existing or click "Add New"</small>
+                        <button type="button" class="btn-outline" id="add-cattitude-btn" style="padding:.3rem .6rem;font-size:.8rem;margin-top:.4rem;display:none" onclick="toggleCattitudeInput()">Back to List</button>
                     </div>
                     <div class="form-group">
                         <label>Upload Photo</label>
@@ -198,6 +203,20 @@
             loadFoodTable();
             loadFoodCheckboxes();
             loadFoodDropdown();
+            loadCattitudeDropdown();
+            
+            // Set up cattitude dropdown event listener
+            const cattitudeSelect = document.getElementById('cat-cattitude');
+            if (cattitudeSelect) {
+                cattitudeSelect.addEventListener('change', onCattitudeChange);
+            }
+            
+            // Auto-fill intake date with today's date
+            const intakeInput = document.getElementById('cat-intake');
+            if (intakeInput && !intakeInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                intakeInput.value = today;
+            }
         }
 
         /* ---- Tab switching ---- */
@@ -296,6 +315,51 @@
             ).join('');
         }
 
+        /* ---- Cattitude Dropdown ---- */
+        function loadCattitudeDropdown() {
+            const cats = getCats();
+            const cattitudes = [...new Set(cats.map(c => c.cattitude).filter(Boolean))].sort();
+            const sel = document.getElementById('cat-cattitude');
+            if (sel) {
+                sel.innerHTML = '<option value="">Select personality</option>' +
+                    cattitudes.map(c => `<option value="${c}">${c}</option>`).join('') +
+                    '<option value="">— Add New —</option>';
+            }
+        }
+
+        function toggleCattitudeInput() {
+            const sel = document.getElementById('cat-cattitude');
+            const input = document.getElementById('cat-cattitude-new');
+            const btn = document.getElementById('add-cattitude-btn');
+            const hint = document.getElementById('cattitude-hint');
+            if (input.style.display === 'none') {
+                input.style.display = '';
+                sel.style.display = 'none';
+                btn.textContent = 'Back to List';
+                hint.textContent = 'Adding new cattitude quality';
+                input.focus();
+            } else {
+                input.style.display = 'none';
+                sel.style.display = '';
+                btn.style.display = 'none';
+                hint.textContent = 'Pick from existing or click "Add New"';
+                input.value = '';
+            }
+        }
+
+        function onCattitudeChange() {
+            const sel = document.getElementById('cat-cattitude');
+            const input = document.getElementById('cat-cattitude-new');
+            const btn = document.getElementById('add-cattitude-btn');
+            if (sel.value === '') {
+                btn.style.display = '';
+            } else {
+                btn.style.display = 'none';
+                input.style.display = 'none';
+                input.value = '';
+            }
+        }
+
         /* ---- Food Dropdown for Add Food ---- */
         function loadFoodDropdown() {
             const foods = getFood();
@@ -354,6 +418,21 @@
 
             const selectedFoods = [...document.querySelectorAll('input[name="food_prefs"]:checked')].map(cb => parseInt(cb.value));
             const objectPosition = document.getElementById('cat-photo-position') ? document.getElementById('cat-photo-position').value : 'center';
+            
+            // Handle cattitude: either from dropdown or new input
+            let cattitude = document.getElementById('cat-cattitude').value.trim();
+            const cattitudeNew = document.getElementById('cat-cattitude-new').value.trim();
+            if (!cattitude && cattitudeNew) {
+                cattitude = capitalizeWords(cattitudeNew);
+            } else if (!cattitude) {
+                cattitude = 'Friendly';
+            }
+            
+            // Auto-fill intake date if empty
+            let intakeDate = document.getElementById('cat-intake').value;
+            if (!intakeDate) {
+                intakeDate = new Date().toISOString().split('T')[0];
+            }
 
             const newCat = addCat({
                 shelter_name: shelterName,
@@ -361,9 +440,9 @@
                 fur_color: document.getElementById('cat-fur').value.trim() || 'Unknown',
                 dob: document.getElementById('cat-dob').value,
                 gender: document.getElementById('cat-gender').value,
-                intake_date: document.getElementById('cat-intake').value,
+                intake_date: intakeDate,
                 health_status: document.getElementById('cat-health').value,
-                cattitude: document.getElementById('cat-cattitude').value.trim() || 'Friendly',
+                cattitude: cattitude,
                 photo_url: catPhotoDataUrl || '',
                 photo_position: objectPosition
             });
@@ -376,11 +455,20 @@
                 alert.innerHTML = `<p style="color:#00b894;font-weight:700;margin-bottom:.6rem">✅ Cat "${shelterName}" added! (ID: #${newCat.catid})</p>`;
                 document.getElementById('add-cat-form').reset();
                 document.getElementById('cat-photo-preview').style.display = 'none';
+                document.getElementById('cat-cattitude-new').style.display = 'none';
+                document.getElementById('add-cattitude-btn').style.display = 'none';
                 catPhotoDataUrl = '';
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('cat-intake').value = today;
                 loadCatsTable();
+                loadCattitudeDropdown();
             } else {
                 alert.innerHTML = '<p style="color:#d63031;font-weight:700;margin-bottom:.6rem">⚠️ Failed to add cat. Shelter name might be a duplicate.</p>';
             }
+        }
+
+        function capitalizeWords(str) {
+            return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
         }
 
         function handleAddFood(e) {
@@ -558,6 +646,11 @@
         function editFood(foodid) {
             const food = getFoodById(foodid);
             if (!food) return;
+            window._editFoodPhotoData = '';
+
+            const currentPhotoHTML = food.image_url
+                ? `<div class="img-crop-preview" style="margin-bottom:.5rem"><img src="${food.image_url}" alt="Current"></div>`
+                : '<p style="color:var(--text-muted);font-size:.85rem">No image uploaded</p>';
 
             document.getElementById('edit-food-form-content').innerHTML = `
                 <form onsubmit="saveEditFood(event,${foodid})">
@@ -576,6 +669,14 @@
                             <input type="number" id="edit-food-price" value="${food.price.toFixed(2)}" step="0.01" min="0" required>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Image</label>
+                        ${currentPhotoHTML}
+                        <input type="file" accept="image/*" onchange="editFoodPhotoPreview(this,${foodid})" style="margin-top:.4rem">
+                        <div id="edit-food-photo-preview-wrapper" style="display:none;margin-top:.4rem">
+                            <div class="img-crop-preview"><img id="edit-food-photo-img" src="" alt="New"></div>
+                        </div>
+                    </div>
                     <div style="display:flex;gap:.8rem;margin-top:1rem">
                         <button type="submit" class="btn-primary" style="flex:1;padding:.65rem;border-radius:8px">Save Changes</button>
                         <button type="button" class="btn-outline" style="flex:1;padding:.65rem;border-radius:8px" onclick="closeEditFoodModal()">Cancel</button>
@@ -583,6 +684,23 @@
                 </form>`;
 
             document.getElementById('edit-food-modal').classList.add('show');
+        }
+
+        function editFoodPhotoPreview(input, foodid) {
+            const wrapper = document.getElementById('edit-food-photo-preview-wrapper');
+            const img = document.getElementById('edit-food-photo-img');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    window._editFoodPhotoData = e.target.result;
+                    img.src = e.target.result;
+                    wrapper.style.display = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                wrapper.style.display = 'none';
+                window._editFoodPhotoData = '';
+            }
         }
 
         function saveEditFood(e, foodid) {
@@ -595,7 +713,14 @@
             const existing = getFood().find(f => f.name.toLowerCase() === name.toLowerCase() && f.foodid !== foodid);
             if (existing) { alert('A food item with this name already exists!'); return; }
 
-            updateFood(foodid, { name, qty, price });
+            const updates = { name, qty, price };
+            
+            // If a new photo was uploaded, use it
+            if (window._editFoodPhotoData) {
+                updates.image_url = window._editFoodPhotoData;
+            }
+
+            updateFood(foodid, updates);
             closeEditFoodModal();
             loadFoodTable();
             loadFoodCheckboxes();

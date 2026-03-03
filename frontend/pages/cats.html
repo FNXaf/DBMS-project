@@ -167,13 +167,26 @@
         }
         function toggleChip(btn) {
             btn.classList.toggle('active');
-            // Apply gradient bg for fur-color chips
+            // Apply gradient bg for fur-color chips with adaptive text color
             if (btn.dataset.gradient && btn.classList.contains('active')) {
                 btn.style.background = btn.dataset.gradient;
                 btn.style.borderColor = 'transparent';
-                btn.style.color = '#fff';
-                btn.style.textShadow = 'none';
-                btn.style.webkitTextStroke = '0.5px rgba(0,0,0,.45)';
+                
+                // Get brightness from gradient (extract first color if possible)
+                const colorMatch = btn.dataset.gradient.match(/#[\da-f]{6}/i);
+                const hexColor = colorMatch ? colorMatch[0] : '#ffffff';
+                const brightness = getColorBrightness(hexColor);
+                
+                // Set text color based on brightness
+                if (brightness > 128) {
+                    btn.style.color = '#000';
+                    btn.style.textShadow = '0 1px 2px rgba(255,255,255,.3)';
+                    btn.style.webkitTextStroke = 'none';
+                } else {
+                    btn.style.color = '#fff';
+                    btn.style.textShadow = 'none';
+                    btn.style.webkitTextStroke = '0.5px rgba(0,0,0,.45)';
+                }
             } else {
                 btn.style.background = '';
                 btn.style.borderColor = '';

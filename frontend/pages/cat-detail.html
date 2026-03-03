@@ -62,11 +62,14 @@
                     </div>
                 </div>` : '';
 
+            // Calculate text color based on fur color brightness
+            const colorMatch = furGrad.match(/#[\da-f]{6}/i);
+            const hexColor = colorMatch ? colorMatch[0] : '#ffffff';
+            const brightness = getColorBrightness(hexColor);
+            const textColor = brightness > 128 ? '#000' : '#fff';
+            const textShadow = brightness > 128 ? '0 1px 2px rgba(255,255,255,.3)' : '0 1px 3px rgba(0,0,0,.2)';
+
             content.innerHTML = `
-                <div class="detail-fur-banner" style="background:${furGrad}">
-                    <div class="fur-swatch" style="background:${furGrad}"></div>
-                    ${cat.fur_color} coat
-                </div>
                 <div class="detail-grid">
                     <div class="detail-img" style="border:3px solid transparent;background-image:${furGrad};background-origin:border-box;">
                         ${getCatImageHTML(cat)}
@@ -78,7 +81,7 @@
                         <div class="detail-attrs">
                             <span class="detail-attr"><span class="icon">⏳</span> ${age}</span>
                             <span class="detail-attr"><span class="icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</span>
-                            <span class="detail-attr" style="background:${furGrad};color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.2);-webkit-text-stroke:.3px rgba(0,0,0,.2)"><span class="icon">🎨</span> ${cat.fur_color}</span>
+                            <span class="detail-attr" style="background:${furGrad};color:${textColor};text-shadow:${textShadow}"><span class="icon">🎨</span> ${cat.fur_color}</span>
                             <span class="detail-attr"><span class="icon">😸</span> ${cat.cattitude}</span>
                         </div>
 

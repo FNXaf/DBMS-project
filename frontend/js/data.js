@@ -425,6 +425,27 @@ function getCurrentUser() { const d = localStorage.getItem('meowtopia_session');
 function isOwner(userid) { return getUserAdoptions(userid).some(a => ['Approved', 'Completed', 'Pending'].includes(a.status)); }
 function isAdmin() { const u = getCurrentUser(); return u && u.role === 'admin'; }
 
+// ===== Get Cats that prefer a specific food =====
+function getCatsThatPreferFood(foodid) {
+    const prefs = JSON.parse(localStorage.getItem('meowtopia_cat_food_prefs')) || [];
+    const cats = getCats();
+    return prefs
+        .filter(p => p.foodid === parseInt(foodid))
+        .map(p => cats.find(c => c.catid === p.catid))
+        .filter(Boolean);
+}
+
+// ===== Helper: Get color brightness (for contrast) =====
+function getColorBrightness(hexColor) {
+    if (!hexColor || !hexColor.startsWith('#')) return 128;
+    const hex = hexColor.replace('#', '');
+    if (hex.length < 6) return 128;
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
 // ===== RESET — Remove this + the button when backend is connected =====
 function resetAllData() {
     const keys = [];

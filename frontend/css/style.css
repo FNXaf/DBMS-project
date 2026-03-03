@@ -37,13 +37,21 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .hero-video-wrap{position:absolute;inset:0;z-index:0}
 .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease}
 .hero-video.active{opacity:.7}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(108,92,231,.3),rgba(253,121,168,.18));z-index:1}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(253,121,168,.05));z-index:1}
 .hero-content{position:relative;z-index:2;text-align:center;color:#fff;padding:2rem;max-width:700px}
 .hero-content .btn{display:inline-block;background:#fff;color:var(--primary);font-weight:700;padding:.85rem 2.4rem;border-radius:50px;font-size:1.05rem;transition:transform .2s,box-shadow .2s}
 .hero-content .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.18)}
 /* progress bar at bottom of hero */
 .hero-progress{position:absolute;bottom:0;left:0;width:100%;height:3px;background:rgba(255,255,255,.15);z-index:3}
 .hero-progress-bar{height:100%;width:0;background:rgba(255,255,255,.7);transition:width .1s linear}
+
+/* Animations for hero content */
+.elegant-heading.animate{animation:heading-emerge 1.2s cubic-bezier(.225,.46,.45,.94) forwards}
+.elegant-tagline.animate{animation:tagline-float .6s ease-out .4s forwards;opacity:0}
+.hero-btn.animate{animation:button-pop .5s cubic-bezier(.34,1.56,.64,1) .8s forwards;transform:scale(0);transform-origin:center}
+@keyframes heading-emerge{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes tagline-float{0%{opacity:0;transform:translateY(10px)}100%{opacity:.9;transform:translateY(0)}}
+@keyframes button-pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 
 /* ===== HOME PAGE — ELEGANT / CURSIVE TYPOGRAPHY ===== */
 .home-page .elegant-heading{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:4.5rem;font-weight:900;letter-spacing:-.02em;margin-bottom:.4rem;text-shadow:0 2px 20px rgba(0,0,0,.35);line-height:1.1}
@@ -53,9 +61,12 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .elegant-section-title::after{content:'';display:block;width:60px;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));margin:.6rem auto 0;border-radius:2px}
 
 /* ===== HOME — ABOUT SECTION ===== */
-.home-about{max-width:1000px}
+.home-about{max-width:1000px;position:relative;background:url('https://cdn2.thecatapi.com/images/OGTWqNNOt.jpg') center/cover no-repeat;border-radius:16px;overflow:hidden}
+.home-about::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.88);z-index:0}
+.home-about>*{position:relative;z-index:1}
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem}
-.about-text{font-family:'Playfair Display',Georgia,serif;font-size:1.05rem;line-height:1.85;color:var(--text-light)}
+.about-content{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;padding:1rem}
+.about-text{font-family:'Playfair Display',Georgia,serif;font-size:1.05rem;line-height:1.85;color:var(--text)}
 .about-text p{margin-bottom:1rem}
 .about-text strong{color:var(--primary);font-weight:700}
 .about-text em{color:var(--accent-dark);font-style:italic}
@@ -152,6 +163,11 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .chip{padding:.3rem .7rem;border:2px solid var(--border);border-radius:20px;background:transparent;color:var(--text-light);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s}
 .chip.active{border-color:var(--primary);background:var(--surface-alt);color:var(--primary)}
 
+/* Color brightness detection for contrast */
+.color-bg-dark{background-color:var(--color-bg)!important}
+.color-bg-dark .food-cats-tags{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.color-bg-light .food-cats-tags{color:#000;text-shadow:0 1px 2px rgba(255,255,255,.3)}
+
 /* dual range slider */
 .dual-range{position:relative;height:50px;margin-top:.3rem}
 .dual-range-track{position:absolute;top:18px;left:0;right:0;height:6px;border-radius:3px;background:var(--border)}
@@ -185,7 +201,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .detail-desc{color:var(--text-light);line-height:1.7;font-size:.98rem}
 .detail-actions{display:flex;gap:.8rem;margin-top:auto}
 /* fur-tinted detail banner */
-.detail-fur-banner{border-radius:var(--radius);padding:.8rem 1.2rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.6rem;color:#fff;font-weight:700;font-size:.95rem;text-shadow:0 1px 4px rgba(0,0,0,.2)}
+.detail-fur-banner{border-radius:var(--radius);padding:.8rem 1.2rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.6rem;color:#fff;font-weight:700;font-size:.95rem;text-shadow:0 1px 4px rgba(0,0,0,.2);display:none}
 .detail-fur-banner .fur-swatch{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.5)}
 
 /* image crop overlay (admin) */
@@ -307,6 +323,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit}
 .sparkle-h-body .stock{font-size:.78rem;color:var(--text-muted)}
 .sparkle-h-body .stock.low{color:var(--accent)}
 .sparkle-h-body .add-cart-btn{margin-top:.4rem;padding:.45rem .8rem;width:fit-content}
+.food-cats-tags{display:flex;flex-wrap:wrap;gap:.25rem;font-size:.7rem;margin-top:.3rem;font-weight:600}
+.food-cats-tags span{background:rgba(255,255,255,.15);padding:.15rem .35rem;border-radius:12px;display:inline-block}
 
 /* sparkle card — premium look */
 .sparkle-card{position:relative;overflow:hidden;scroll-snap-align:start;min-width:200px;border-radius:var(--radius);background:var(--surface);border:2px solid var(--primary-light);box-shadow:0 4px 16px rgba(108,92,231,.15)}

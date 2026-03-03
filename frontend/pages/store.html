@@ -104,7 +104,12 @@
             document.getElementById('suggested-heading').innerHTML = `Recommended for ${nameLabel} ✨`;
             const container = document.getElementById('suggested-products');
             // Build horizontal cards as carousel slides
-            container.innerHTML = suggested.map(f => `
+            container.innerHTML = suggested.map(f => {
+                const preferringCats = getCatsThatPreferFood(f.foodid);
+                const catTags = preferringCats.length > 0 
+                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span>${c.shelter_name || c.name || 'Cat'}</span>`).join('')}</div>`
+                    : '';
+                return `
                 <div class="carousel-slide">
                     <div class="sparkle-card sparkle-horizontal">
                         <div class="sparkle-h-img">
@@ -115,13 +120,14 @@
                             <h4>${f.name}</h4>
                             <span class="price">₹${f.price.toFixed(2)}</span>
                             <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
+                            ${catTags}
                             <button class="add-cart-btn" ${f.qty <= 0 ? 'disabled' : ''} onclick="event.stopPropagation();handleAddToCart(${f.foodid})">
                                 ${f.qty > 0 ? 'Add to Cart' : 'Out of Stock'}
                             </button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
 
             // Init carousel auto-scroll
             initCarousel();
@@ -141,7 +147,12 @@
 
             grid.style.display = '';
             empty.style.display = 'none';
-            grid.innerHTML = foods.map(f => `
+            grid.innerHTML = foods.map(f => {
+                const preferringCats = getCatsThatPreferFood(f.foodid);
+                const catTags = preferringCats.length > 0 
+                    ? `<div class="food-cats-tags">${preferringCats.map(c => `<span>${c.shelter_name || c.name || 'Cat'}</span>`).join('')}</div>`
+                    : '';
+                return `
                 <div class="product-card">
                     <div class="product-card-img">
                         <img src="${f.image_url || ''}" alt="${f.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
@@ -151,12 +162,13 @@
                         <h4>${f.name}</h4>
                         <span class="price">₹${f.price.toFixed(2)}</span>
                         <span class="stock ${f.qty <= 3 ? 'low' : ''}">${f.qty > 0 ? f.qty + ' in stock' : 'Out of stock'}</span>
+                        ${catTags}
                         <button class="add-cart-btn" ${f.qty <= 0 || !userid ? 'disabled' : ''} onclick="handleAddToCart(${f.foodid})">
                             ${!userid ? 'Login to Buy' : (f.qty > 0 ? 'Add to Cart' : 'Out of Stock')}
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         /* ---- Cart Functions ---- */
