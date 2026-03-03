@@ -38,6 +38,7 @@
         } else {
             document.title = `${cat.shelter_name} — Meowtopia 🐾`;
             const user = getCurrentUser();
+            const returnTo = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
             const age = formatAge(cat.dob);
             const healthClass = cat.health_status === 'Healthy' ? 'healthy' : 'needs-care';
             const furGrad = furColorGradient(cat.fur_color);
@@ -47,7 +48,7 @@
                 if (user && user.role !== 'admin') {
                     adoptBtn = `<a href="adopt.html?id=${cat.catid}" class="btn-primary" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;font-size:1.05rem">Adopt Me 🐾</a>`;
                 } else if (!user) {
-                    adoptBtn = `<a href="login.html" class="btn-outline" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;font-size:1.05rem">Login to Adopt 🔐</a>`;
+                    adoptBtn = `<a href="login.html?redirect=${returnTo}" class="btn-outline" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;font-size:1.05rem">Login to Adopt 🔐</a>`;
                 }
             } else {
                 adoptBtn = `<span class="btn-outline" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;opacity:.6;cursor:not-allowed">Already Adopted 💕</span>`;

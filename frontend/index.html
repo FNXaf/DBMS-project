@@ -170,14 +170,23 @@
             let rafId     = null;
 
             function showVideo(index) {
-                videos.forEach((v, i) => {
-                    v.classList.remove('active');
-                    if (i !== index) { v.pause(); v.currentTime = 0; }
-                });
+                const previous = videos[current];
+                videos.forEach(v => v.classList.remove('active'));
+
+                if (previous && previous !== videos[index]) {
+                    previous.classList.add('exiting');
+                    setTimeout(() => {
+                        previous.classList.remove('exiting');
+                        previous.pause();
+                        previous.currentTime = 0;
+                    }, 220);
+                }
+
                 videos[index].classList.add('active');
                 videos[index].currentTime = 0;
                 videos[index].play().catch(() => {});
                 animateBar(videos[index]);
+                current = index;
             }
 
             function animateBar(vid) {
@@ -193,8 +202,7 @@
 
             videos.forEach((v, i) => {
                 v.addEventListener('ended', () => {
-                    current = (i + 1) % videos.length;
-                    showVideo(current);
+                    showVideo((i + 1) % videos.length);
                 });
             });
 

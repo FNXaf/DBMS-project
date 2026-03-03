@@ -9,6 +9,8 @@ function renderNavbar(activePage) {
     const user = getCurrentUser();
     const nav = document.getElementById('navbar');
     if (!nav) return;
+    const returnTo = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
+    const loginHref = `${BASE}pages/login.html?redirect=${returnTo}`;
 
     let authLinks = '';
     if (user) {
@@ -25,7 +27,7 @@ function renderNavbar(activePage) {
         `;
     } else {
         authLinks = `
-            <a href="${BASE}pages/login.html" class="btn-nav-outline">Login</a>
+            <a href="${loginHref}" class="btn-nav-outline">Login</a>
             <a href="${BASE}pages/register.html" class="btn-nav">Sign Up</a>
         `;
     }
@@ -62,8 +64,16 @@ function handleLogout() {
 function getCatImageHTML(cat) {
     const grad = furColorGradient(cat.fur_color);
     const pos = cat.photo_position || 'center';
+    const imageUrl = (cat.photo_url || '').trim();
+    if (!imageUrl) {
+        return `
+            <div class="cat-img-placeholder" style="background: ${grad};display:flex;">
+                <span>🐱</span><span class="breed-label">${cat.breed}</span>
+            </div>
+        `;
+    }
     return `
-        <img src="${cat.photo_url}"
+        <img src="${imageUrl}"
              alt="${cat.shelter_name || cat.breed}"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
              style="width: 100%; height: 100%; object-fit: cover; object-position: ${pos};">

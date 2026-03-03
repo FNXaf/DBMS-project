@@ -55,9 +55,24 @@
     <script>
         renderNavbar('login');
 
+        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+
+        function resolveRedirectTarget(userObj) {
+            if (redirectParam) {
+                try {
+                    const decoded = decodeURIComponent(redirectParam);
+                    if (decoded.startsWith('/') || decoded.startsWith('./') || decoded.startsWith('../') || decoded.includes('/pages/') || decoded.endsWith('.html')) {
+                        return decoded;
+                    }
+                } catch (_) {}
+            }
+            return userObj && userObj.role === 'admin' ? 'admin.html' : '../index.html';
+        }
+
         // Redirect if already logged in
-        if (getCurrentUser()) {
-            window.location.href = '../index.html';
+        const existingUser = getCurrentUser();
+        if (existingUser) {
+            window.location.href = resolveRedirectTarget(existingUser);
         }
 
         function fillDemo(email, password) {
@@ -76,12 +91,7 @@
             if (result.success) {
                 alertDiv.innerHTML = '<div class="alert alert-success">Login successful! Redirecting... 🐾</div>';
                 setTimeout(() => {
-                    // Redirect based on role
-                    if (result.user.role === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = '../index.html';
-                    }
+                    window.location.href = resolveRedirectTarget(result.user);
                 }, 800);
             } else {
                 alertDiv.innerHTML = `<div class="alert alert-error">${result.message}</div>`;

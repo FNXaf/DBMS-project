@@ -38,9 +38,10 @@
         const catid = getParam('id');
         const cat = getCatById(catid);
         const content = document.getElementById('adopt-content');
+        const returnTo = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
 
         if (!user) {
-            content.innerHTML = `<div class="form-card text-center"><h2>🔐 Login Required</h2><p>You need to be logged in to adopt a cat!</p><a href="login.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Login Now</a></div>`;
+            content.innerHTML = `<div class="form-card text-center"><h2>🔐 Login Required</h2><p>You need to be logged in to adopt a cat!</p><a href="login.html?redirect=${returnTo}" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Login Now</a></div>`;
         } else if (!cat) {
             content.innerHTML = `<div class="form-card text-center"><h2>😿 Cat Not Found</h2><p>This cat may no longer be available.</p><a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Browse Cats</a></div>`;
         } else if (!cat.is_available) {
@@ -87,13 +88,10 @@
 
                         <div class="form-group">
                             <label>How would you like to receive your cat?</label>
-                            <div style="display:flex;gap:1rem;margin-top:.3rem">
-                                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600">
-                                    <input type="radio" name="pickup_method" value="pickup" checked> 🏪 Store Pickup
-                                </label>
-                                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600">
-                                    <input type="radio" name="pickup_method" value="delivery"> 🏠 Home Delivery
-                                </label>
+                            <input type="hidden" id="pickup_method" value="pickup">
+                            <div class="pickup-method-buttons" style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.3rem">
+                                <button type="button" class="pickup-method-btn active" onclick="setPickupMethod('pickup', this)">🏪 Store Pickup</button>
+                                <button type="button" class="pickup-method-btn" onclick="setPickupMethod('delivery', this)">🏠 Home Delivery</button>
                             </div>
                         </div>
 
@@ -106,7 +104,7 @@
             e.preventDefault();
             const catNameInput = document.getElementById('cat_name').value.trim();
             const catName = catNameInput || cat.shelter_name;
-            const pickupMethod = document.querySelector('input[name="pickup_method"]:checked').value;
+            const pickupMethod = document.getElementById('pickup_method').value;
 
             createAdoption({
                 userid: user.userid,
@@ -125,6 +123,12 @@
                 : `Get ready — ${catName} is being prepared for the journey home!`;
 
             document.getElementById('adoption-modal').classList.add('show');
+        }
+
+        function setPickupMethod(method, btn) {
+            document.getElementById('pickup_method').value = method;
+            document.querySelectorAll('.pickup-method-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
         }
 
         document.getElementById('adoption-modal').addEventListener('click', function(e) {
