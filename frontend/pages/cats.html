@@ -158,12 +158,12 @@
         renderNavbar('cats');
         let currentViewMode = 'slide';
         let currentCats = [];
+        let allCats = [];
         let slideIndex = 0;
         let slideTouchStartX = 0;
         const viewIcon = { slide: '🎞️', tiles: '🧩', list: '📋' };
 
         /* ---- Populate filter chips ---- */
-        const allCats = getCats();
         const uniq = (arr) => [...new Set(arr)].sort();
 
         function buildChips(containerId, values, useGradient) {
@@ -173,9 +173,11 @@
                 return `<button class="chip" data-val="${v}" data-gradient="${grad}" onclick="toggleChip(this)">${v}</button>`;
             }).join('');
         }
-        buildChips('fg-fur', uniq(allCats.map(c => c.fur_color)), true);
-        buildChips('fg-breed', uniq(allCats.map(c => c.breed)), false);
-        buildChips('fg-cattitude', uniq(allCats.map(c => c.cattitude)), false);
+        function populateFilterChips() {
+            buildChips('fg-fur', uniq(allCats.map(c => c.fur_color)), true);
+            buildChips('fg-breed', uniq(allCats.map(c => c.breed)), false);
+            buildChips('fg-cattitude', uniq(allCats.map(c => c.cattitude)), false);
+        }
 
         /* ---- Toggle helpers ---- */
         function toggleSingle(btn) {
@@ -283,7 +285,7 @@
 
         /* ---- Apply Filters & Sort ---- */
         function applyFilters() {
-            let cats = getCats();
+            let cats = [...allCats];
 
             // Gender
             const gender = getSingleVal('fg-gender');
@@ -446,7 +448,20 @@
             }
         });
 
-        applyFilters();
+        async function initCatsPage() {
+            try {
+                allCats = await getCats();
+                populateFilterChips();
+                applyFilters();
+            } catch (err) {
+                document.getElementById('cat-grid').innerHTML = '';
+                document.getElementById('empty-state').style.display = 'block';
+                document.querySelector('#empty-state h3').textContent = 'Could not load cats';
+                document.querySelector('#empty-state p').textContent = err.message || 'Please check backend connection.';
+            }
+        }
+
+        initCatsPage();
     </script>
 </body>
 </html>

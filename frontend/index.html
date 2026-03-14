@@ -154,13 +154,26 @@
         });
 
         /* ---- Stats ---- */
-        const available = getAvailableCats();
-        const allCats   = getCats();
-        const adoptions = getAdoptions();
-        const breeds    = [...new Set(allCats.map(c => c.breed))];
-        document.getElementById('stat-cats').textContent    = available.length;
-        document.getElementById('stat-adopted').textContent = adoptions.length;
-        document.getElementById('stat-breeds').textContent  = breeds.length;
+        async function initHomeStats() {
+            try {
+                const allCats = await getCats();
+                const available = allCats.filter(c => c.is_available);
+                let adoptions = [];
+                if (isAdmin()) {
+                    adoptions = await getAdoptions();
+                }
+                const breeds = [...new Set(allCats.map(c => c.breed))];
+
+                document.getElementById('stat-cats').textContent = available.length;
+                document.getElementById('stat-adopted').textContent = adoptions.length;
+                document.getElementById('stat-breeds').textContent = breeds.length;
+            } catch (_) {
+                document.getElementById('stat-cats').textContent = '0';
+                document.getElementById('stat-adopted').textContent = '0';
+                document.getElementById('stat-breeds').textContent = '0';
+            }
+        }
+        initHomeStats();
 
         /* ---- Sequential Video Carousel ---- */
         (function() {

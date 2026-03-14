@@ -24,18 +24,27 @@
         renderNavbar('cats');
 
         const catid = getParam('id');
-        const cat = getCatById(catid);
         const content = document.getElementById('cat-detail-content');
 
-        if (!cat) {
-            content.innerHTML = `
-                <div style="text-align:center;padding:3rem 0">
-                    <div style="font-size:3rem">😿</div>
-                    <h3>Cat not found</h3>
-                    <p style="color:var(--text-light)">This kitty might have already found a home!</p>
-                    <a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Browse Other Cats</a>
-                </div>`;
-        } else {
+        async function initCatDetail() {
+            let cat = null;
+            try {
+                cat = await getCatById(catid);
+            } catch (_) {
+                cat = null;
+            }
+
+            if (!cat) {
+                content.innerHTML = `
+                    <div style="text-align:center;padding:3rem 0">
+                        <div style="font-size:3rem">😿</div>
+                        <h3>Cat not found</h3>
+                        <p style="color:var(--text-light)">This kitty might have already found a home!</p>
+                        <a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Browse Other Cats</a>
+                    </div>`;
+                return;
+            }
+
             document.title = `${cat.shelter_name} — Meowtopia 🐾`;
             const user = getCurrentUser();
             const returnTo = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
@@ -54,7 +63,6 @@
                 adoptBtn = `<span class="btn-outline" style="display:inline-block;padding:.85rem 2rem;border-radius:8px;opacity:.6;cursor:not-allowed">Already Adopted 💕</span>`;
             }
 
-            // Calculate text color based on fur color brightness
             const colorMatch = furGrad.match(/#[\da-f]{6}/i);
             const hexColor = colorMatch ? colorMatch[0] : '#ffffff';
             const brightness = getColorBrightness(hexColor);
@@ -92,6 +100,8 @@
                     </div>
                 </div>`;
         }
+
+        initCatDetail();
     </script>
 </body>
 </html>

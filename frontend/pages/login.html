@@ -80,12 +80,12 @@
             document.getElementById('password').value = password;
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            const result = loginUser(email, password);
+            const result = await loginUser(email, password);
             const alertDiv = document.getElementById('login-alert');
 
             if (result.success) {

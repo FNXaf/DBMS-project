@@ -176,9 +176,16 @@
         }
 
         /* ---- Cats Table ---- */
-        function loadCatsTable() {
-            const cats = getCats();
+        async function loadCatsTable() {
             const c = document.getElementById('cats-table-container');
+            let cats = [];
+            try {
+                cats = await getCats();
+            } catch (err) {
+                c.innerHTML = `<p class="text-center mt-3" style="color:#d63031">${err.message || 'Failed to load cats'}</p>`;
+                return;
+            }
+
             if (cats.length === 0) { c.innerHTML = '<p class="text-center mt-3" style="color:var(--text-muted)">No cats yet</p>'; return; }
 
             c.innerHTML = `<table class="admin-table"><thead><tr>
@@ -202,22 +209,27 @@
         }
 
         /* ---- Adoptions Table ---- */
-        function loadAdoptionsTable() {
-            const adoptions = getAdoptions();
+        async function loadAdoptionsTable() {
             const c = document.getElementById('adoptions-table-container');
+            let adoptions = [];
+            try {
+                adoptions = await getAdoptions();
+            } catch (err) {
+                c.innerHTML = `<p class="text-center mt-3" style="color:#d63031">${err.message || 'Failed to load adoptions'}</p>`;
+                return;
+            }
+
             if (adoptions.length === 0) { c.innerHTML = '<p class="text-center mt-3" style="color:var(--text-muted)">No adoption requests yet</p>'; return; }
 
             c.innerHTML = `<table class="admin-table"><thead><tr>
                 <th>ID</th><th>User</th><th>Cat Name</th><th>Breed</th><th>Pickup</th><th>Date</th><th>Status</th><th>Actions</th>
             </tr></thead><tbody>
                 ${adoptions.map(a => {
-                    const adopter = getUserById(a.userid);
-                    const cat = getCatById(a.catid);
                     return `<tr>
                         <td>#${a.adoptionid}</td>
-                        <td>${adopter ? adopter.full_name : 'Unknown'}</td>
+                        <td>${a.adopter_name || 'Unknown'}</td>
                         <td><strong>${a.cat_name_given}</strong></td>
-                        <td>${cat ? cat.breed : '—'}</td>
+                        <td>${a.breed || '—'}</td>
                         <td>${a.pickup_method === 'pickup' ? '🏪' : '🏠'}</td>
                         <td>${formatDate(a.adoption_date)}</td>
                         <td><span class="status-badge ${a.status.toLowerCase()}">${a.status}</span></td>
@@ -231,8 +243,13 @@
         }
 
         /* ---- Cattitude Dropdown ---- */
-        function loadCattitudeDropdown() {
-            const cats = getCats();
+        async function loadCattitudeDropdown() {
+            let cats = [];
+            try {
+                cats = await getCats();
+            } catch (_) {
+                cats = [];
+            }
             const cattitudes = [...new Set(cats.map(c => c.cattitude).filter(Boolean))].sort();
             const sel = document.getElementById('cat-cattitude');
             if (sel) {
@@ -276,36 +293,29 @@
         }
 
         /* ---- Cat Photo Upload Preview ---- */
-        let catPhotoDataUrl = '';
+        let catPhotoFile = null;
         function previewCatPhoto(input) {
             const preview = document.getElementById('cat-photo-preview');
             const img = document.getElementById('cat-photo-preview-img');
             if (input.files && input.files[0]) {
+                catPhotoFile = input.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    catPhotoDataUrl = e.target.result;
-                    img.src = catPhotoDataUrl;
+                    img.src = e.target.result;
                     preview.style.display = '';
                 };
                 reader.readAsDataURL(input.files[0]);
             } else {
                 preview.style.display = 'none';
-                catPhotoDataUrl = '';
+                catPhotoFile = null;
             }
         }
 
         /* ---- Handlers ---- */
-        function handleAddCat(e) {
+        async function handleAddCat(e) {
             e.preventDefault();
             const alert = document.getElementById('add-cat-alert');
             const shelterName = document.getElementById('cat-shelter-name').value.trim();
-
-            // Check shelter_name uniqueness
-            const existing = getCats().find(c => c.shelter_name.toLowerCase() === shelterName.toLowerCase());
-            if (existing) {
-                alert.innerHTML = '<p style="color:#d63031;font-weight:700;margin-bottom:.6rem">⚠️ A cat with this shelter name already exists!</p>';
-                return;
-            }
 
             const objectPosition = document.getElementById('cat-photo-position') ? document.getElementById('cat-photo-position').value : 'center';
             
@@ -324,32 +334,32 @@
                 intakeDate = new Date().toISOString().split('T')[0];
             }
 
-            const newCat = addCat({
-                shelter_name: shelterName,
-                breed: document.getElementById('cat-breed').value.trim(),
-                fur_color: document.getElementById('cat-fur').value.trim() || 'Unknown',
-                dob: document.getElementById('cat-dob').value,
-                gender: document.getElementById('cat-gender').value,
-                intake_date: intakeDate,
-                health_status: document.getElementById('cat-health').value,
-                cattitude: cattitude,
-                photo_url: catPhotoDataUrl || '',
-                photo_position: objectPosition
-            });
+            try {
+                const newCat = await addCat({
+                    shelter_name: shelterName,
+                    breed: document.getElementById('cat-breed').value.trim(),
+                    fur_color: document.getElementById('cat-fur').value.trim() || 'Unknown',
+                    dob: document.getElementById('cat-dob').value,
+                    gender: document.getElementById('cat-gender').value,
+                    intake_date: intakeDate,
+                    health_status: document.getElementById('cat-health').value,
+                    cattitude: cattitude,
+                    photo_position: objectPosition,
+                    photo_file: catPhotoFile
+                });
 
-            if (newCat) {
                 alert.innerHTML = `<p style="color:#00b894;font-weight:700;margin-bottom:.6rem">✅ Cat "${shelterName}" added! (ID: #${newCat.catid})</p>`;
                 document.getElementById('add-cat-form').reset();
                 document.getElementById('cat-photo-preview').style.display = 'none';
                 document.getElementById('cat-cattitude-new').style.display = 'none';
                 document.getElementById('add-cattitude-btn').style.display = 'none';
-                catPhotoDataUrl = '';
+                catPhotoFile = null;
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('cat-intake').value = today;
                 loadCatsTable();
                 loadCattitudeDropdown();
-            } else {
-                alert.innerHTML = '<p style="color:#d63031;font-weight:700;margin-bottom:.6rem">⚠️ Failed to add cat. Shelter name might be a duplicate.</p>';
+            } catch (err) {
+                alert.innerHTML = `<p style="color:#d63031;font-weight:700;margin-bottom:.6rem">⚠️ ${err.message || 'Failed to add cat.'}</p>`;
             }
         }
 
@@ -357,16 +367,35 @@
             return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
         }
 
-        function handleDeleteCat(catid) {
-            if (confirm('Delete this cat?')) { deleteCat(catid); loadCatsTable(); }
+        async function handleDeleteCat(catid) {
+            if (confirm('Delete this cat?')) {
+                try {
+                    await deleteCat(catid);
+                    loadCatsTable();
+                } catch (err) {
+                    alert(err.message || 'Failed to delete cat');
+                }
+            }
         }
-        function changeAdoptionStatus(id, status) { updateAdoptionStatus(id, status); loadAdoptionsTable(); }
+        async function changeAdoptionStatus(id, status) {
+            try {
+                await updateAdoptionStatus(id, status);
+                loadAdoptionsTable();
+            } catch (err) {
+                alert(err.message || 'Failed to update status');
+            }
+        }
 
         /* ---- Edit Cat Modal ---- */
-        function editCat(catid) {
-            const cat = getCatById(catid);
+        async function editCat(catid) {
+            let cat = null;
+            try {
+                cat = await getCatById(catid);
+            } catch (_) {
+                cat = null;
+            }
             if (!cat) return;
-            window._editCatPhotoData = '';
+            window._editCatPhotoFile = null;
 
             const currentPhotoHTML = cat.photo_url
                 ? `<div class="img-crop-preview" style="margin-bottom:.5rem"><img src="${cat.photo_url}" alt="Current" style="object-position:${cat.photo_position || 'center'}"></div>`
@@ -446,17 +475,21 @@
             document.getElementById('edit-cat-modal').classList.add('show');
         }
 
-        function saveEditCat(e, catid) {
+        async function saveEditCat(e, catid) {
             e.preventDefault();
             const newShelterName = document.getElementById('edit-shelter-name').value.trim();
-            const cat = getCatById(catid);
-
-            // Check uniqueness if name changed
-            if (newShelterName.toLowerCase() !== cat.shelter_name.toLowerCase()) {
-                const dup = getCats().find(c => c.shelter_name.toLowerCase() === newShelterName.toLowerCase() && c.catid !== catid);
-                if (dup) { alert('A cat with this shelter name already exists!'); return; }
+            let cat = null;
+            try {
+                cat = await getCatById(catid);
+            } catch (_) {
+                cat = null;
+            }
+            if (!cat) {
+                alert('Cat not found.');
+                return;
             }
 
+            // Check uniqueness if name changed
             const updates = {
                 shelter_name: newShelterName,
                 breed: document.getElementById('edit-breed').value.trim(),
@@ -470,13 +503,17 @@
             };
 
             // If a new photo was uploaded, use it
-            if (window._editCatPhotoData) {
-                updates.photo_url = window._editCatPhotoData;
+            if (window._editCatPhotoFile) {
+                updates.photo_file = window._editCatPhotoFile;
             }
 
-            updateCat(catid, updates);
-            closeEditModal();
-            loadCatsTable();
+            try {
+                await updateCat(catid, updates);
+                closeEditModal();
+                loadCatsTable();
+            } catch (err) {
+                alert(err.message || 'Failed to update cat');
+            }
         }
 
         function closeEditModal() {
@@ -490,9 +527,9 @@
         function editCatPhotoPreview(input, catid) {
             const img = document.getElementById('edit-cat-photo-img');
             if (input.files && input.files[0]) {
+                window._editCatPhotoFile = input.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    window._editCatPhotoData = e.target.result;
                     img.src = e.target.result;
                     img.parentElement.style.display = '';
                 };

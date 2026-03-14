@@ -1,134 +1,72 @@
-﻿// ===== Meowtopia Mock Data Layer =====
-// All mock data used to simulate the database via localStorage.
-// *** This entire file is removable when the real backend is connected. ***
+// ===== Meowtopia API Data Layer =====
+// Replaces localStorage mock database with backend REST API calls.
 
-const MOCK_CATS = [
-    {
-        catid: 1, shelter_name: "Snowball", name: null,
-        breed: "Persian", fur_color: "White",
-        dob: "2024-07-15", gender: "Female",
-        intake_date: "2025-01-15", health_status: "Vaccinated",
-        cattitude: "Chill",
-        photo_url: "https://cdn2.thecatapi.com/images/ebv.jpg",
-        gradient: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-        is_available: true
-    },
-    {
-        catid: 2, shelter_name: "Whiskers", name: null,
-        breed: "Siamese", fur_color: "Cream & Brown",
-        dob: "2024-03-01", gender: "Male",
-        intake_date: "2025-03-01", health_status: "Healthy",
-        cattitude: "Sassy",
-        photo_url: "https://cdn2.thecatapi.com/images/ai6Jps4sx.jpg",
-        gradient: "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
-        is_available: true
-    },
-    {
-        catid: 3, shelter_name: "Mittens", name: null,
-        breed: "Maine Coon", fur_color: "Tabby",
-        dob: "2023-11-20", gender: "Male",
-        intake_date: "2024-11-20", health_status: "Healthy",
-        cattitude: "Playful",
-        photo_url: "https://cdn2.thecatapi.com/images/OGTWqNNOt.jpg",
-        gradient: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
-        is_available: true
-    },
-    {
-        catid: 4, shelter_name: "Pudding", name: null,
-        breed: "Ragdoll", fur_color: "White & Gray",
-        dob: "2025-06-10", gender: "Female",
-        intake_date: "2025-05-10", health_status: "Vaccinated",
-        cattitude: "Cuddly",
-        photo_url: "https://cdn2.thecatapi.com/images/j5cVSqLer.jpg",
-        gradient: "linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%)",
-        is_available: true
-    },
-    {
-        catid: 5, shelter_name: "Shadow", name: null,
-        breed: "British Shorthair", fur_color: "Gray",
-        dob: "2023-01-05", gender: "Male",
-        intake_date: "2024-08-05", health_status: "Healthy",
-        cattitude: "Lazy",
-        photo_url: "https://cdn2.thecatapi.com/images/s4wQHTcjM.jpg",
-        gradient: "linear-gradient(135deg, #c1c1c1 0%, #e8e8e8 100%)",
-        is_available: true
-    },
-    {
-        catid: 6, shelter_name: "Tigress", name: null,
-        breed: "Bengal", fur_color: "Spotted Brown",
-        dob: "2025-02-28", gender: "Female",
-        intake_date: "2025-02-28", health_status: "Under Treatment",
-        cattitude: "Energetic",
-        photo_url: "https://cdn2.thecatapi.com/images/IFXsxIreu.jpg",
-        gradient: "linear-gradient(135deg, #f5af19 0%, #f12711 100%)",
-        is_available: true
-    },
-    {
-        catid: 7, shelter_name: "Ginger", name: null,
-        breed: "Scottish Fold", fur_color: "Orange",
-        dob: "2024-08-12", gender: "Female",
-        intake_date: "2025-04-12", health_status: "Healthy",
-        cattitude: "Sweet",
-        photo_url: "https://cdn2.thecatapi.com/images/ZJKzGLEbY.jpg",
-        gradient: "linear-gradient(135deg, #fceabb 0%, #f8b500 100%)",
-        is_available: true
-    },
-    {
-        catid: 8, shelter_name: "Sphinx", name: null,
-        breed: "Sphynx", fur_color: "Pink",
-        dob: "2024-01-30", gender: "Male",
-        intake_date: "2025-01-30", health_status: "Vaccinated",
-        cattitude: "Mischievous",
-        photo_url: "https://cdn2.thecatapi.com/images/KJF8fB_20.jpg",
-        gradient: "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
-        is_available: true
-    },
-    {
-        catid: 9, shelter_name: "Caramel", name: null,
-        breed: "Abyssinian", fur_color: "Tawny",
-        dob: "2025-06-01", gender: "Male",
-        intake_date: "2025-06-01", health_status: "Healthy",
-        cattitude: "Curious",
-        photo_url: "https://cdn2.thecatapi.com/images/pbuqsGBaa.jpg",
-        gradient: "linear-gradient(135deg, #d4a574 0%, #c68642 100%)",
-        is_available: true
-    },
-    {
-        catid: 10, shelter_name: "Duchess", name: null,
-        breed: "Russian Blue", fur_color: "Silver-Blue",
-        dob: "2024-09-20", gender: "Female",
-        intake_date: "2025-03-20", health_status: "Vaccinated",
-        cattitude: "Gentle",
-        photo_url: "https://cdn2.thecatapi.com/images/mOBxKGjMQ.jpg",
-        gradient: "linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)",
-        is_available: true
-    }
-];
+const API_BASE = window.MEOWTOPIA_API_BASE || 'http://localhost:5000/api';
 
-const MOCK_USERS = [
-    {
-        userid: 1, full_name: "Admin Meow", email: "admin@meowtopia.com",
-        password: "admin123", phone: "9876543210", address: "Meowtopia HQ",
-        role: "admin", created_at: "2025-01-01T00:00:00"
-    },
-    {
-        userid: 2, full_name: "Sam Johnson", email: "sam@example.com",
-        password: "sam123", phone: "1234567890", address: "123 Cat Street, Mewville",
-        role: "user", created_at: "2025-02-10T00:00:00"
-    }
-];
+function getAuthToken() {
+    return localStorage.getItem('meowtopia_token') || '';
+}
 
-// ===== LocalStorage Database Layer =====
-function initializeData() {
-    if (!localStorage.getItem('meowtopia_initialized')) {
-        localStorage.setItem('meowtopia_cats', JSON.stringify(MOCK_CATS));
-        localStorage.setItem('meowtopia_users', JSON.stringify(MOCK_USERS));
-        localStorage.setItem('meowtopia_adoptions', JSON.stringify([]));
-        localStorage.setItem('meowtopia_next_cat_id', '11');
-        localStorage.setItem('meowtopia_next_user_id', '3');
-        localStorage.setItem('meowtopia_next_adoption_id', '1');
-        localStorage.setItem('meowtopia_initialized', 'true');
+function setAuthSession(token, user) {
+    if (token) {
+        localStorage.setItem('meowtopia_token', token);
     }
+    if (user) {
+        localStorage.setItem('meowtopia_session', JSON.stringify(user));
+    }
+}
+
+async function apiRequest(path, options = {}) {
+    const headers = { ...(options.headers || {}) };
+    const token = getAuthToken();
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    const requestOptions = {
+        method: options.method || 'GET',
+        headers,
+        body: options.body
+    };
+
+    // Browser sets multipart boundaries automatically.
+    if (!(requestOptions.body instanceof FormData) && requestOptions.body && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    const res = await fetch(`${API_BASE}${path}`, requestOptions);
+    const payload = await res.json().catch(() => ({ success: false, message: 'Invalid server response' }));
+
+    if (!res.ok || !payload.success) {
+        const message = payload && payload.message ? payload.message : `Request failed (${res.status})`;
+        throw new Error(message);
+    }
+
+    return payload.data;
+}
+
+function normalizeHealthStatus(status) {
+    if (status === 'Needs Care') return 'Under Treatment';
+    return status;
+}
+
+function denormalizeHealthStatus(status) {
+    if (status === 'Under Treatment') return 'Needs Care';
+    return status;
+}
+
+function mapCatFromApi(cat) {
+    return {
+        ...cat,
+        health_status: denormalizeHealthStatus(cat.health_status)
+    };
+}
+
+function mapCatToApi(cat) {
+    return {
+        ...cat,
+        health_status: normalizeHealthStatus(cat.health_status)
+    };
 }
 
 // ===== Age Helpers (derive from DOB) =====
@@ -149,23 +87,23 @@ function formatAge(dob) {
     return years + ' yr' + (years !== 1 ? 's' : '') + ', ' + rem + ' mo';
 }
 
-// ===== Fur-Color → Gradient (for image placeholders) =====
+// ===== Fur-Color to Gradient =====
 function furColorGradient(furColor) {
     const lc = (furColor || '').toLowerCase();
     const map = [
-        ['white',   'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)'],
-        ['black',   'linear-gradient(135deg, #434343 0%, #1a1a2e 100%)'],
-        ['orange',  'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)'],
-        ['ginger',  'linear-gradient(135deg, #fceabb 0%, #f8b500 100%)'],
-        ['gray',    'linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%)'],
-        ['tabby',   'linear-gradient(135deg, #c68642 0%, #d4a574 100%)'],
-        ['cream',   'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'],
-        ['brown',   'linear-gradient(135deg, #8B6914 0%, #c68642 100%)'],
+        ['white', 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)'],
+        ['black', 'linear-gradient(135deg, #434343 0%, #1a1a2e 100%)'],
+        ['orange', 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)'],
+        ['ginger', 'linear-gradient(135deg, #fceabb 0%, #f8b500 100%)'],
+        ['gray', 'linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%)'],
+        ['tabby', 'linear-gradient(135deg, #c68642 0%, #d4a574 100%)'],
+        ['cream', 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'],
+        ['brown', 'linear-gradient(135deg, #8B6914 0%, #c68642 100%)'],
         ['spotted', 'linear-gradient(135deg, #f5af19 0%, #d4a574 100%)'],
-        ['tawny',   'linear-gradient(135deg, #d4a574 0%, #c68642 100%)'],
-        ['silver',  'linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)'],
-        ['blue',    'linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)'],
-        ['pink',    'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)'],
+        ['tawny', 'linear-gradient(135deg, #d4a574 0%, #c68642 100%)'],
+        ['silver', 'linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)'],
+        ['blue', 'linear-gradient(135deg, #89ABE3 0%, #D4E8FF 100%)'],
+        ['pink', 'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)']
     ];
     for (const [key, grad] of map) {
         if (lc.includes(key)) return grad;
@@ -174,131 +112,205 @@ function furColorGradient(furColor) {
 }
 
 // ===== Cat CRUD =====
-function getCats() {
-    return JSON.parse(localStorage.getItem('meowtopia_cats')) || [];
-}
-function getAvailableCats() {
-    return getCats().filter(c => c.is_available);
-}
-function getCatById(catid) {
-    return getCats().find(c => c.catid === parseInt(catid));
-}
-function addCat(cat) {
-    const cats = getCats();
-    if (cats.find(c => c.shelter_name.toLowerCase() === cat.shelter_name.toLowerCase())) {
-        return { error: 'Shelter name already exists!' };
-    }
-    const nextId = parseInt(localStorage.getItem('meowtopia_next_cat_id'));
-    cat.catid = nextId;
-    cat.is_available = true;
-    cats.push(cat);
-    localStorage.setItem('meowtopia_cats', JSON.stringify(cats));
-    localStorage.setItem('meowtopia_next_cat_id', String(nextId + 1));
-    return cat;
-}
-function updateCat(catid, updates) {
-    const cats = getCats();
-    const idx = cats.findIndex(c => c.catid === parseInt(catid));
-    if (idx !== -1) {
-        if (updates.shelter_name) {
-            const dup = cats.find(c => c.catid !== parseInt(catid) && c.shelter_name.toLowerCase() === updates.shelter_name.toLowerCase());
-            if (dup) return { error: 'Shelter name already exists!' };
+async function getCats(filters = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters || {}).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && String(v) !== '') {
+            params.set(k, v);
         }
-        cats[idx] = { ...cats[idx], ...updates };
-        localStorage.setItem('meowtopia_cats', JSON.stringify(cats));
-        return cats[idx];
-    }
-    return null;
+    });
+
+    const data = await apiRequest(`/cats${params.toString() ? `?${params.toString()}` : ''}`);
+    return data.map(mapCatFromApi);
 }
-function deleteCat(catid) {
-    let cats = getCats();
-    cats = cats.filter(c => c.catid !== parseInt(catid));
-    localStorage.setItem('meowtopia_cats', JSON.stringify(cats));
+
+async function getAvailableCats() {
+    const cats = await getCats();
+    return cats.filter((c) => c.is_available);
+}
+
+async function getCatById(catid) {
+    const cat = await apiRequest(`/cats/${catid}`);
+    return mapCatFromApi(cat);
+}
+
+function buildCatFormData(catInput) {
+    const formData = new FormData();
+    const cat = mapCatToApi(catInput || {});
+    const file = cat.photo_file || cat.photoFile || null;
+
+    Object.entries(cat).forEach(([key, value]) => {
+        if (value === undefined || value === null || key === 'photo_file' || key === 'photoFile') return;
+        formData.append(key, value);
+    });
+
+    if (file instanceof File) {
+        formData.append('photo', file);
+    }
+
+    return formData;
+}
+
+async function addCat(cat) {
+    const data = await apiRequest('/cats', {
+        method: 'POST',
+        body: buildCatFormData(cat)
+    });
+    return mapCatFromApi(data);
+}
+
+async function updateCat(catid, updates) {
+    const data = await apiRequest(`/cats/${catid}`, {
+        method: 'PUT',
+        body: buildCatFormData(updates)
+    });
+    return mapCatFromApi(data);
+}
+
+async function deleteCat(catid) {
+    await apiRequest(`/cats/${catid}`, { method: 'DELETE' });
 }
 
 // ===== Users =====
-function getUsers() { return JSON.parse(localStorage.getItem('meowtopia_users')) || []; }
-function getUserById(userid) { return getUsers().find(u => u.userid === parseInt(userid)); }
-
-// ===== Adoptions =====
-function getAdoptions() { return JSON.parse(localStorage.getItem('meowtopia_adoptions')) || []; }
-function getUserAdoptions(userid) { return getAdoptions().filter(a => a.userid === parseInt(userid)); }
-
-function createAdoption(adoption) {
-    const adoptions = getAdoptions();
-    const nextId = parseInt(localStorage.getItem('meowtopia_next_adoption_id'));
-    adoption.adoptionid = nextId;
-    adoption.adoption_date = new Date().toISOString();
-    adoption.status = 'Pending';
-    adoptions.push(adoption);
-    localStorage.setItem('meowtopia_adoptions', JSON.stringify(adoptions));
-    localStorage.setItem('meowtopia_next_adoption_id', String(nextId + 1));
-    updateCat(adoption.catid, { is_available: false, name: adoption.cat_name_given });
-    return adoption;
+function getCurrentUser() {
+    const data = localStorage.getItem('meowtopia_session');
+    return data ? JSON.parse(data) : null;
 }
 
-function updateAdoptionStatus(adoptionid, status) {
-    const adoptions = getAdoptions();
-    const idx = adoptions.findIndex(a => a.adoptionid === parseInt(adoptionid));
-    if (idx !== -1) {
-        adoptions[idx].status = status;
-        localStorage.setItem('meowtopia_adoptions', JSON.stringify(adoptions));
-        return adoptions[idx];
+async function refreshCurrentUser() {
+    try {
+        const user = await apiRequest('/auth/me');
+        localStorage.setItem('meowtopia_session', JSON.stringify(user));
+        return user;
+    } catch (_) {
+        return null;
     }
+}
+
+function isAdmin() {
+    const u = getCurrentUser();
+    return !!(u && u.role === 'admin');
+}
+
+// ===== Adoptions =====
+async function getAdoptions() {
+    return apiRequest('/adoptions');
+}
+
+async function getUserAdoptions(userid) {
+    const user = getCurrentUser();
+    if (!user || Number(user.userid) !== Number(userid)) return [];
+    const rows = await apiRequest('/adoptions/my');
+    return rows.map((a) => ({
+        ...a,
+        health_status: denormalizeHealthStatus(a.health_status)
+    }));
+}
+
+async function createAdoption(adoption) {
+    return apiRequest('/adoptions', {
+        method: 'POST',
+        body: JSON.stringify(adoption)
+    });
+}
+
+async function updateAdoptionStatus(adoptionid, status) {
+    return apiRequest(`/adoptions/${adoptionid}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+    });
+}
+
+// ===== Auth =====
+async function registerUser(userData) {
+    try {
+        const data = await apiRequest('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify(userData)
+        });
+        return { success: true, data };
+    } catch (err) {
+        return { success: false, message: err.message };
+    }
+}
+
+async function loginUser(email, password) {
+    try {
+        const data = await apiRequest('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+        });
+        setAuthSession(data.token, data.user);
+        return { success: true, user: data.user };
+    } catch (err) {
+        return { success: false, message: err.message };
+    }
+}
+
+function logoutUser() {
+    localStorage.removeItem('meowtopia_token');
+    localStorage.removeItem('meowtopia_session');
+}
+
+async function isOwner(userid) {
+    const rows = await getUserAdoptions(userid);
+    return rows.some((a) => ['Approved', 'Completed', 'Pending'].includes(a.status));
+}
+
+// Dashboard references this from old store feature. Keep as a safe no-op.
+function getCatFoodPrefs() {
+    return [];
+}
+
+// ===== Legacy Food Store Compatibility (adoption-only scope) =====
+function getFood() {
+    return [];
+}
+
+function getFoodById() {
     return null;
 }
 
-// ===== Cart (Removed — Food Store no longer part of the system) =====
+function getSuggestedFoods() {
+    return [];
+}
 
-// ===== Auth =====
-function registerUser(userData) {
-    const users = getUsers();
-    if (users.find(u => u.email === userData.email)) return { success: false, message: "Email already registered!" };
-    const nextId = parseInt(localStorage.getItem('meowtopia_next_user_id'));
-    const user = { userid: nextId, full_name: userData.full_name, email: userData.email, password: userData.password, phone: userData.phone || "", address: userData.address || "", role: "user", created_at: new Date().toISOString() };
-    users.push(user);
-    localStorage.setItem('meowtopia_users', JSON.stringify(users));
-    localStorage.setItem('meowtopia_next_user_id', String(nextId + 1));
-    return { success: true, user };
+function getCatsThatPreferFood() {
+    return [];
 }
-function loginUser(email, password) {
-    const users = getUsers();
-    const user = users.find(u => u.email === email && u.password === password);
-    if (user) {
-        const sessionUser = { ...user }; delete sessionUser.password;
-        localStorage.setItem('meowtopia_session', JSON.stringify(sessionUser));
-        return { success: true, user: sessionUser };
-    }
-    return { success: false, message: "Invalid email or password!" };
+
+function getCart() {
+    return [];
 }
-function logoutUser() { localStorage.removeItem('meowtopia_session'); }
-function getCurrentUser() { const d = localStorage.getItem('meowtopia_session'); return d ? JSON.parse(d) : null; }
-function isOwner(userid) { return getUserAdoptions(userid).some(a => ['Approved', 'Completed', 'Pending'].includes(a.status)); }
-function isAdmin() { const u = getCurrentUser(); return u && u.role === 'admin'; }
+
+function addToCart() {
+    return { success: false, message: 'Food store is not enabled in this build.' };
+}
+
+function updateCartItem() {
+    return { success: false, message: 'Food store is not enabled in this build.' };
+}
+
+function removeFromCart() {
+    return { success: false, message: 'Food store is not enabled in this build.' };
+}
+
+function checkout() {
+    return { success: false, error: 'Food store is not enabled in this build.' };
+}
+
+// Legacy hook kept for compatibility with old home reset button.
+function resetAllData() {
+    logoutUser();
+}
 
 // ===== Helper: Get color brightness (for contrast) =====
 function getColorBrightness(hexColor) {
     if (!hexColor || !hexColor.startsWith('#')) return 128;
     const hex = hexColor.replace('#', '');
     if (hex.length < 6) return 128;
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
     return (r * 299 + g * 587 + b * 114) / 1000;
 }
-
-// ===== RESET — Remove this + the button when backend is connected =====
-function resetAllData() {
-    const keys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith('meowtopia_')) keys.push(k);
-    }
-    keys.forEach(k => localStorage.removeItem(k));
-    initializeData();
-    window.location.reload();
-}
-
-// ===== Initialize =====
-initializeData();
-

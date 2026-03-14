@@ -34,15 +34,31 @@
         const user = getCurrentUser();
         const header = document.getElementById('dashboard-header');
         const content = document.getElementById('dashboard-content');
+        let cachedAdoptions = [];
 
-        if (!user) {
-            header.innerHTML = '<h1>🔐 Login Required</h1><p style="color:var(--text-light)">Please log in to access your dashboard</p>';
-            content.innerHTML = `<div class="text-center mt-3"><a href="login.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px">Login Now</a></div>`;
-        } else if (user.role === 'admin') {
-            header.innerHTML = '<h1>Hey Admin! 🛠️</h1><p style="color:var(--text-light)">Head to the admin panel to manage the platform</p>';
-            content.innerHTML = `<div class="text-center mt-3"><a href="admin.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px">Go to Admin Panel</a></div>`;
-        } else {
-            const userAdoptions = getUserAdoptions(user.userid);
+        async function initDashboard() {
+            if (!user) {
+                header.innerHTML = '<h1>🔐 Login Required</h1><p style="color:var(--text-light)">Please log in to access your dashboard</p>';
+                content.innerHTML = `<div class="text-center mt-3"><a href="login.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px">Login Now</a></div>`;
+                return;
+            }
+
+            if (user.role === 'admin') {
+                header.innerHTML = '<h1>Hey Admin! 🛠️</h1><p style="color:var(--text-light)">Head to the admin panel to manage the platform</p>';
+                content.innerHTML = `<div class="text-center mt-3"><a href="admin.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px">Go to Admin Panel</a></div>`;
+                return;
+            }
+
+            let userAdoptions = [];
+            try {
+                userAdoptions = await getUserAdoptions(user.userid);
+            } catch (err) {
+                header.innerHTML = `<h1>Welcome, ${user.full_name}! 🐱</h1>`;
+                content.innerHTML = `<div class="text-center" style="padding:3rem 0"><h3>${err.message || 'Failed to load dashboard.'}</h3></div>`;
+                return;
+            }
+
+            cachedAdoptions = userAdoptions;
 
             if (userAdoptions.length === 0) {
                 header.innerHTML = `<h1>Welcome, ${user.full_name}! 🐱</h1><p style="color:var(--text-light)">Your cat family starts here</p>`;
@@ -53,72 +69,71 @@
                         <p style="color:var(--text-light)">Browse our adorable cats and find your purrfect match.</p>
                         <a href="cats.html" class="btn-primary" style="display:inline-block;padding:.7rem 1.4rem;border-radius:8px;margin-top:1rem">Browse Cats 🐱</a>
                     </div>`;
-            } else {
-                header.innerHTML = `<h1>Welcome back, ${user.full_name}! 🐱</h1><p style="color:var(--text-light)">Your babies miss you — here's your cat family</p>`;
-
-                // Stats
-                let statsHTML = `<div class="dashboard-stats">
-                    <div class="stat-card"><div class="stat-value">${userAdoptions.length}</div><div class="stat-label">My Cats</div></div>
-                    <div class="stat-card"><div class="stat-value">${userAdoptions.filter(a => a.status === 'Approved').length}</div><div class="stat-label">Approved</div></div>
-                    <div class="stat-card"><div class="stat-value">${userAdoptions.filter(a => a.status === 'Pending').length}</div><div class="stat-label">Pending</div></div>
-                </div>`;
-
-                // Cat cards
-                let catsHTML = '<div class="dashboard-section"><h2>🐱 My Cats</h2>';
-                userAdoptions.forEach(adoption => {
-                    const cat = getCatById(adoption.catid);
-                    if (!cat) return;
-                    const age = formatAge(cat.dob);
-                    catsHTML += `
-                        <div class="adoption-card" onclick="openCatModal(${cat.catid},${adoption.adoptionid})">
-                            <div class="adoption-card-img">${getCatImageHTML(cat)}</div>
-                            <div class="adoption-card-body">
-                                <h4>${adoption.cat_name_given}</h4>
-                                <p>${cat.breed} · ${age} · ${cat.cattitude}</p>
-                            </div>
-                            <span class="status-badge ${adoption.status.toLowerCase()}">${adoption.status}</span>
-                        </div>`;
-                });
-                catsHTML += '</div>';
-
-                // Notices — birthday from DOB
-                const firstCat = getCatById(userAdoptions[0].catid);
-                const firstName = userAdoptions[0].cat_name_given;
-                let birthdayNotice = '';
-                if (firstCat && firstCat.dob) {
-                    const bday = new Date(firstCat.dob);
-                    const now = new Date();
-                    const nextBday = new Date(now.getFullYear(), bday.getMonth(), bday.getDate());
-                    if (nextBday < now) nextBday.setFullYear(nextBday.getFullYear() + 1);
-                    const daysUntil = Math.ceil((nextBday - now) / (1000*60*60*24));
-                    birthdayNotice = `<div class="adoption-card" style="cursor:default">
-                        <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">🎂</div>
-                        <div class="adoption-card-body">
-                            <h4>${firstName}'s Birthday</h4>
-                            <p>${daysUntil === 0 ? 'Happy Birthday today! 🎉' : daysUntil + ' days away — ' + bday.toLocaleDateString('en-US', {month:'long',day:'numeric'})}</p>
-                        </div>
-                    </div>`;
-                }
-
-                let noticesHTML = `<div class="dashboard-section"><h2>📋 Notices & Reminders</h2>
-                    ${birthdayNotice}
-                    <div class="adoption-card" style="cursor:default">
-                        <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">🩺</div>
-                        <div class="adoption-card-body"><h4>Vet Visit Reminder</h4><p>Scheduled for next month — annual checkup for ${firstName}</p></div>
-                    </div>
-                    <div class="adoption-card" style="cursor:default">
-                        <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">💡</div>
-                        <div class="adoption-card-body"><h4>Cat Care Tip</h4><p>Cats need 12–16 hours of sleep per day — let them nap!</p></div>
-                    </div>
-                </div>`;
-
-                content.innerHTML = statsHTML + catsHTML + noticesHTML;
+                return;
             }
+
+            header.innerHTML = `<h1>Welcome back, ${user.full_name}! 🐱</h1><p style="color:var(--text-light)">Your babies miss you — here's your cat family</p>`;
+
+            const statsHTML = `<div class="dashboard-stats">
+                <div class="stat-card"><div class="stat-value">${userAdoptions.length}</div><div class="stat-label">My Cats</div></div>
+                <div class="stat-card"><div class="stat-value">${userAdoptions.filter(a => a.status === 'Approved').length}</div><div class="stat-label">Approved</div></div>
+                <div class="stat-card"><div class="stat-value">${userAdoptions.filter(a => a.status === 'Pending').length}</div><div class="stat-label">Pending</div></div>
+            </div>`;
+
+            let catsHTML = '<div class="dashboard-section"><h2>🐱 My Cats</h2>';
+            userAdoptions.forEach(adoption => {
+                const cat = adoption;
+                const age = formatAge(cat.dob);
+                catsHTML += `
+                    <div class="adoption-card" onclick="openCatModal(${adoption.catid},${adoption.adoptionid})">
+                        <div class="adoption-card-img">${getCatImageHTML(cat)}</div>
+                        <div class="adoption-card-body">
+                            <h4>${adoption.cat_name_given}</h4>
+                            <p>${cat.breed} · ${age} · ${cat.cattitude}</p>
+                        </div>
+                        <span class="status-badge ${adoption.status.toLowerCase()}">${adoption.status}</span>
+                    </div>`;
+            });
+            catsHTML += '</div>';
+
+            const firstCat = userAdoptions[0];
+            const firstName = userAdoptions[0].cat_name_given;
+            let birthdayNotice = '';
+            if (firstCat && firstCat.dob) {
+                const bday = new Date(firstCat.dob);
+                const now = new Date();
+                const nextBday = new Date(now.getFullYear(), bday.getMonth(), bday.getDate());
+                if (nextBday < now) nextBday.setFullYear(nextBday.getFullYear() + 1);
+                const daysUntil = Math.ceil((nextBday - now) / (1000 * 60 * 60 * 24));
+                birthdayNotice = `<div class="adoption-card" style="cursor:default">
+                    <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">🎂</div>
+                    <div class="adoption-card-body">
+                        <h4>${firstName}'s Birthday</h4>
+                        <p>${daysUntil === 0 ? 'Happy Birthday today! 🎉' : daysUntil + ' days away — ' + bday.toLocaleDateString('en-US', {month:'long',day:'numeric'})}</p>
+                    </div>
+                </div>`;
+            }
+
+            const noticesHTML = `<div class="dashboard-section"><h2>📋 Notices & Reminders</h2>
+                ${birthdayNotice}
+                <div class="adoption-card" style="cursor:default">
+                    <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">🩺</div>
+                    <div class="adoption-card-body"><h4>Vet Visit Reminder</h4><p>Scheduled for next month — annual checkup for ${firstName}</p></div>
+                </div>
+                <div class="adoption-card" style="cursor:default">
+                    <div class="adoption-card-img" style="background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:2rem">💡</div>
+                    <div class="adoption-card-body"><h4>Cat Care Tip</h4><p>Cats need 12–16 hours of sleep per day — let them nap!</p></div>
+                </div>
+            </div>`;
+
+            content.innerHTML = statsHTML + catsHTML + noticesHTML;
         }
 
+        initDashboard();
+
         function openCatModal(catid, adoptionid) {
-            const cat = getCatById(catid);
-            const adoption = getAdoptions().find(a => a.adoptionid === adoptionid);
+            const adoption = cachedAdoptions.find(a => Number(a.adoptionid) === Number(adoptionid));
+            const cat = cachedAdoptions.find(a => Number(a.catid) === Number(catid));
             if (!cat || !adoption) return;
             const age = formatAge(cat.dob);
             const foodPrefs = getCatFoodPrefs(catid);

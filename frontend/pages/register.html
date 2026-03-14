@@ -72,7 +72,7 @@
             window.location.href = '../index.html';
         }
 
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
             const alertDiv = document.getElementById('register-alert');
             
@@ -94,7 +94,7 @@
                 return;
             }
 
-            const result = registerUser({
+            const result = await registerUser({
                 full_name: fullName,
                 email: email,
                 password: password,
