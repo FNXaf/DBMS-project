@@ -1,0 +1,11 @@
+{
+  "name": "meowtopia-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Workspace scripts for Meowtopia frontend and backend",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npx live-server frontend --host=127.0.0.1 --port=5500 --ignore=database/logs/*,backend/*,.git/*,.vscode/*",
+    "dev:frontend:no-browser": "npx live-server frontend --host=127.0.0.1 --port=5500 --no-browser --ignore=database/logs/*,backend/*,.git/*,.vscode/*"
+  }
+}

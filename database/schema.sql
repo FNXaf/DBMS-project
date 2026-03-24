@@ -44,7 +44,7 @@ CREATE TABLE Adoption (
     cat_name_given VARCHAR(100),
     adoption_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     pickup_method ENUM('pickup', 'delivery') NOT NULL,
-    status ENUM('Pending', 'Approved', 'Completed') DEFAULT 'Pending',
+    status ENUM('Pending', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
     FOREIGN KEY (userid) REFERENCES `User`(userid) ON DELETE CASCADE,
     FOREIGN KEY (catid) REFERENCES Cat(catid) ON DELETE CASCADE
 );

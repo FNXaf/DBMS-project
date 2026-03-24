@@ -97,23 +97,45 @@ async function getAllAdoptions(req, res, next) {
 }
 
 async function updateAdoptionStatus(req, res, next) {
+    const conn = await pool.getConnection();
     try {
         const { id } = req.params;
         const { status } = req.body;
-        const allowed = ['Pending', 'Approved', 'Completed'];
+        const allowed = ['Pending', 'Approved', 'Rejected', 'Completed'];
         if (!allowed.includes(status)) {
             return fail(res, 'Invalid status', 400);
         }
 
-        const [result] = await pool.query('UPDATE Adoption SET status = ? WHERE adoptionid = ?', [status, id]);
-        if (!result.affectedRows) {
+        await conn.beginTransaction();
+
+        const [found] = await conn.query('SELECT adoptionid, catid, status FROM Adoption WHERE adoptionid = ? FOR UPDATE', [id]);
+        if (!found.length) {
+            await conn.rollback();
             return fail(res, 'Adoption not found', 404);
         }
 
-        const [rows] = await pool.query('SELECT * FROM Adoption WHERE adoptionid = ?', [id]);
+        const adoption = found[0];
+        const [result] = await conn.query('UPDATE Adoption SET status = ? WHERE adoptionid = ?', [status, id]);
+        if (!result.affectedRows) {
+            await conn.rollback();
+            return fail(res, 'Adoption not found', 404);
+        }
+
+        if (status === 'Rejected') {
+            await conn.query('UPDATE Cat SET is_available = TRUE, name = NULL WHERE catid = ?', [adoption.catid]);
+        }
+
+        await conn.commit();
+
+        const [rows] = await conn.query('SELECT * FROM Adoption WHERE adoptionid = ?', [id]);
         return ok(res, rows[0]);
     } catch (err) {
+        if (conn) {
+            try { await conn.rollback(); } catch (_) {}
+        }
         next(err);
+    } finally {
+        conn.release();
     }
 }
 

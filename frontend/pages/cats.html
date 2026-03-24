@@ -403,20 +403,24 @@
         }
 
         function createCatSlideCard(cat, n, total) {
+            const statusBadge = cat.is_available
+                ? '<span class="cat-card-badge">Available</span>'
+                : '<span class="cat-card-badge unavailable">Adopted</span>';
             return `
                 <div class="cat-slide-stage" onclick="window.location.href='cat-detail.html?id=${cat.catid}'">
                     <div class="cat-slide-count">${n} / ${total}</div>
-                    <div class="cat-slide-image" style="background:${furColorGradient(cat.fur_color)}">${getCatImageHTML(cat)}</div>
-                    <div class="cat-slide-titlebar">
+                    <div class="cat-slide-image" style="background:${furColorGradient(cat.fur_color)}">${getCatImageHTML(cat)}${statusBadge}</div>
+                    <div class="cat-slide-titlebar full-hero">
+                        <p class="hero-kicker">Featured Cat Spotlight</p>
                         <h3>${cat.shelter_name}</h3>
-                        <p>${cat.breed}</p>
+                        <p class="hero-breed">${cat.breed}</p>
+                        <div class="cat-slide-traits-panel">
+                            <div class="cat-attr"><span class="attr-icon">⏳</span> ${formatAge(cat.dob)}</div>
+                            <div class="cat-attr"><span class="attr-icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</div>
+                            <div class="cat-attr"><span class="attr-icon">😸</span> ${cat.cattitude}</div>
+                        </div>
+                        <button class="btn-primary" onclick="event.stopPropagation();window.location.href='cat-detail.html?id=${cat.catid}'">Meet This Cat →</button>
                     </div>
-                </div>
-                <div class="cat-slide-traits-panel">
-                    <div class="cat-attr"><span class="attr-icon">⏳</span> ${formatAge(cat.dob)}</div>
-                    <div class="cat-attr"><span class="attr-icon">${cat.gender === 'Male' ? '♂' : '♀'}</span> ${cat.gender}</div>
-                    <div class="cat-attr"><span class="attr-icon">😸</span> ${cat.cattitude}</div>
-                    <button class="btn-primary" onclick="event.stopPropagation();window.location.href='cat-detail.html?id=${cat.catid}'">Meet Me →</button>
                 </div>
             `;
         }

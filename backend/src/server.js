@@ -24,6 +24,12 @@ function formatStartupError(err) {
     return JSON.stringify(err);
 }
 
+async function ensureSchemaCompatibility() {
+    await pool.query(
+        "ALTER TABLE Adoption MODIFY COLUMN status ENUM('Pending','Approved','Rejected','Completed') DEFAULT 'Pending'"
+    );
+}
+
 async function start() {
     try {
         const missing = getMissingEnvVars();
@@ -35,6 +41,8 @@ async function start() {
         const conn = await pool.getConnection();
         await conn.ping();
         conn.release();
+
+        await ensureSchemaCompatibility();
 
         app.listen(port, () => {
             console.log(`Meowtopia backend running on http://localhost:${port}`);

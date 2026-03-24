@@ -7,8 +7,27 @@ This repo now has:
 
 ## 1. What to run (short answer)
 
-- Backend: yes, run `npm run dev` in `backend`
-- Frontend: no npm needed (it is static). Run with VS Code Live Server, or a static server command.
+- Professional root commands are now available:
+	- Backend: `npm run dev:backend`
+	- Frontend: `npm run dev:frontend`
+- These can be run from project root (`DBMS-project`) without clicking Go Live.
+
+## 1.1 New root scripts (recommended)
+
+From project root:
+
+```powershell
+npm run dev:backend
+```
+
+Open a second terminal in project root:
+
+```powershell
+npm run dev:frontend
+```
+
+Frontend URL:
+- `http://127.0.0.1:5500`
 
 ## 2. Backend setup and run
 
@@ -68,19 +87,25 @@ Then open the URL printed by `serve`.
 
 ## 6. Run both at same time
 
-Use two terminals:
+Use two terminals from project root:
 
 Terminal 1 (backend):
 ```powershell
-cd backend
-npm run dev
+npm run dev:backend
 ```
 
 Terminal 2 (frontend):
-- Start Live Server in VS Code, or:
 ```powershell
-npx serve frontend
+npm run dev:frontend
 ```
+
+## 6.1 Daily restart checklist (after laptop shutdown)
+
+1. Start MySQL service first.
+2. Open this project in VS Code.
+3. Terminal 1: run `npm run dev:backend` from project root.
+4. Terminal 2: run `npm run dev:frontend` from project root.
+5. Open `http://127.0.0.1:5500`.
 
 ## 7. Local network hosting (same Wi-Fi)
 
