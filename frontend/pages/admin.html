@@ -137,7 +137,39 @@
                         <button type="button" class="btn-delete" style="padding:.45rem .9rem;border-radius:8px" onclick="deleteSqlLogs()">Delete Logs</button>
                     </div>
                 </div>
-                <p style="color:var(--text-muted);margin-top:-.4rem">Shows executed SQL with timestamp, execution time, parameters, and success/failure for lecturer demo.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.55rem;margin-bottom:.8rem">
+                    <select id="logs-filter-event" onchange="loadSqlLogs()" style="padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;background:#fff">
+                        <option value="">All Events</option>
+                        <option value="CAT_CREATE">Cat Created</option>
+                        <option value="CAT_UPDATE">Cat Updated</option>
+                        <option value="CAT_DELETE">Cat Deleted</option>
+                        <option value="ADOPTION_CREATE">Adoption Created</option>
+                        <option value="ADOPTION_STATUS_UPDATE">Adoption Status Updated</option>
+                        <option value="ADOPTION_UPDATE">Adoption Updated</option>
+                        <option value="ADOPTION_DELETE">Adoption Deleted</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                    <select id="logs-filter-queryType" onchange="loadSqlLogs()" style="padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;background:#fff">
+                        <option value="">All Query Types</option>
+                        <option value="SELECT">SELECT</option>
+                        <option value="INSERT">INSERT</option>
+                        <option value="UPDATE">UPDATE</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                    <select id="logs-filter-status" onchange="loadSqlLogs()" style="padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;background:#fff">
+                        <option value="all">All Status</option>
+                        <option value="success">Success Only</option>
+                        <option value="error">Error Only</option>
+                    </select>
+                    <select id="logs-filter-table" onchange="loadSqlLogs()" style="padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;background:#fff">
+                        <option value="">All Tables</option>
+                        <option value="Cat">Cat</option>
+                        <option value="Adoption">Adoption</option>
+                        <option value="User">User</option>
+                    </select>
+                    <input id="logs-filter-search" type="text" placeholder="Search SQL text..." onkeydown="if(event.key==='Enter'){loadSqlLogs()}" style="padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;background:#fff">
+                </div>
+                <p style="color:var(--text-muted);margin-top:-.4rem">Shows executed SQL exactly with bound values, plus timestamp, execution time, and success/failure for lecturer demo.</p>
                 <div id="sql-logs-container"></div>
             </div>
         </div>
@@ -375,6 +407,17 @@
             return withKeywords;
         }
 
+        function getLogFilterPayload() {
+            // These filters are server-side so large log files stay fast to scan.
+            return {
+                event: document.getElementById('logs-filter-event')?.value || '',
+                queryType: document.getElementById('logs-filter-queryType')?.value || '',
+                success: document.getElementById('logs-filter-status')?.value || 'all',
+                table: document.getElementById('logs-filter-table')?.value || '',
+                search: document.getElementById('logs-filter-search')?.value || ''
+            };
+        }
+
         function formatParamValue(value) {
             if (value === null) return '<span style="color:#7f8c8d">null</span>';
             if (typeof value === 'number' || typeof value === 'boolean') return `<span style="color:#2b6cb0">${value}</span>`;
@@ -404,12 +447,13 @@
         async function loadSqlLogs() {
             const container = document.getElementById('sql-logs-container');
             const limit = Number(document.getElementById('logs-limit')?.value || 100);
+            const filters = getLogFilterPayload();
             if (!container) return;
 
             container.innerHTML = '<p style="color:var(--text-muted)">Loading SQL logs...</p>';
 
             try {
-                const data = await getSqlQueryLogs(limit);
+                const data = await getSqlQueryLogs(limit, filters);
                 const logs = Array.isArray(data.logs) ? data.logs : [];
 
                 if (!logs.length) {
@@ -428,9 +472,12 @@
                             const statusColor = log.success ? '#1f7a4f' : '#b42318';
                             const queryType = escapeHtml(log.queryType || 'SQL');
                             const table = log.table ? ` on <strong>${escapeHtml(log.table)}</strong>` : '';
+                            const eventTag = escapeHtml(log.eventTag || 'OTHER');
                             const duration = Number(log.durationMs || 0);
                             const rowCount = log.rowCount === null || log.rowCount === undefined ? 'n/a' : log.rowCount;
-                            const sqlHtml = formatSqlPretty(log.sql);
+                            const queryDescription = escapeHtml(log.queryDescription || 'Executed this SQL query successfully.');
+                            // Prefer renderedSql to show the full query exactly with values.
+                            const sqlHtml = formatSqlPretty(log.renderedSql || log.sql || '');
 
                             return `
                                 <article style="border:1px solid var(--border);border-radius:12px;background:#fff;padding:.9rem .95rem;box-shadow:0 8px 26px rgba(33,35,38,.05)">
@@ -438,6 +485,7 @@
                                         <div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap">
                                             <span style="font-size:.82rem;padding:.18rem .5rem;border-radius:999px;background:${statusBg};color:${statusColor};font-weight:700">${log.success ? 'SUCCESS' : 'ERROR'}</span>
                                             <span style="font-size:.8rem;padding:.16rem .5rem;border-radius:999px;background:#f4f7fb;color:#3a4a5b;font-weight:700">${queryType}</span>
+                                            <span style="font-size:.8rem;padding:.16rem .5rem;border-radius:999px;background:#fff7e6;color:#8a4f08;font-weight:700">${eventTag}</span>
                                             <span style="font-size:.83rem;color:var(--text-light)">#${logs.length - idx}${table}</span>
                                         </div>
                                         <div style="font-size:.8rem;color:var(--text-muted)">${formatLogTimestamp(log.timestamp)}</div>
@@ -448,7 +496,9 @@
                                         <span><strong>Source:</strong> ${escapeHtml(log.source || 'pool')}</span>
                                     </div>
                                     <pre style="margin:0;background:#0f172a;color:#e2e8f0;padding:.75rem .8rem;border-radius:10px;overflow:auto;font-size:.82rem;line-height:1.5;white-space:pre-wrap"><code>${sqlHtml}</code></pre>
-                                    <div style="margin-top:.55rem;font-size:.82rem;color:#374151"><strong>Params:</strong> ${formatParamsPretty(log.params)}</div>
+                                    <div style="margin-top:.55rem;padding:.55rem .65rem;border:1px solid #e6edf3;border-radius:9px;background:#f8fbff;font-size:.83rem;color:#334155">
+                                        <strong>Description:</strong> ${queryDescription}
+                                    </div>
                                     ${log.success ? '' : `<div style="margin-top:.4rem;font-size:.82rem;color:#b42318"><strong>Error:</strong> ${escapeHtml(log.error || 'Unknown SQL error')}</div>`}
                                 </article>`;
                         }).join('')}

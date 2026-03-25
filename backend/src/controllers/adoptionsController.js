@@ -33,7 +33,7 @@ async function createAdoption(req, res, next) {
             [req.user.userid, catid, finalName, pickup_method, 'Pending']
         );
 
-        // Triggers also enforce availability, this update keeps app state instantly consistent.
+        // DB trigger also enforces availability; this app-side update keeps API response consistent immediately.
         await conn.query('UPDATE Cat SET is_available = FALSE, name = ? WHERE catid = ?', [finalName, catid]);
 
         await conn.commit();
@@ -49,6 +49,11 @@ async function createAdoption(req, res, next) {
 
         return ok(res, rows[0], 201);
     } catch (err) {
+        // Friendly response for composite unique constraint uq_adoption_user_cat.
+        if (err && err.code === 'ER_DUP_ENTRY') {
+            try { await conn.rollback(); } catch (_) {}
+            return fail(res, 'Duplicate adoption request for this user and cat is not allowed', 409);
+        }
         if (conn) {
             try { await conn.rollback(); } catch (_) {}
         }

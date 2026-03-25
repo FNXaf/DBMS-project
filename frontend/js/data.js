@@ -289,8 +289,18 @@ async function updateAdoptionStatus(adoptionid, status) {
 }
 
 // ===== SQL Logs (admin demo) =====
-async function getSqlQueryLogs(limit = 200) {
-    return apiRequest(`/logs/sql?limit=${encodeURIComponent(limit)}`);
+async function getSqlQueryLogs(limit = 200, filters = {}) {
+    const params = new URLSearchParams();
+    params.set('limit', String(limit));
+
+    Object.entries(filters || {}).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        const str = String(value).trim();
+        if (!str) return;
+        params.set(key, str);
+    });
+
+    return apiRequest(`/logs/sql?${params.toString()}`);
 }
 
 async function clearSqlQueryLogs() {

@@ -34,7 +34,9 @@ CREATE TABLE Cat (
     cattitude VARCHAR(100),
     photo_url VARCHAR(255),
     photo_position VARCHAR(10) DEFAULT 'center',
-    is_available BOOLEAN DEFAULT TRUE
+    is_available BOOLEAN DEFAULT TRUE,
+    -- DBMS constraint: a cat's birth date must be earlier than intake date.
+    CONSTRAINT chk_cat_dob_before_intake CHECK (dob < intake_date)
 );
 
 CREATE TABLE Adoption (
@@ -45,8 +47,11 @@ CREATE TABLE Adoption (
     adoption_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     pickup_method ENUM('pickup', 'delivery') NOT NULL,
     status ENUM('Pending', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
-    FOREIGN KEY (userid) REFERENCES `User`(userid) ON DELETE CASCADE,
-    FOREIGN KEY (catid) REFERENCES Cat(catid) ON DELETE CASCADE
+    -- DBMS constraint: same user cannot create duplicate requests for same cat.
+    CONSTRAINT uq_adoption_user_cat UNIQUE (userid, catid),
+    -- FK update cascade keeps child rows aligned if parent PK changes.
+    FOREIGN KEY (userid) REFERENCES `User`(userid) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (catid) REFERENCES Cat(catid) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 DELIMITER $$

@@ -48,6 +48,14 @@ function parseBooleanValue(value, fallback) {
     return fallback;
 }
 
+function isDobBeforeIntake(dob, intakeDate) {
+    if (!dob || !intakeDate) return false;
+    const dobDate = new Date(dob);
+    const intake = new Date(intakeDate);
+    if (Number.isNaN(dobDate.getTime()) || Number.isNaN(intake.getTime())) return false;
+    return dobDate.getTime() < intake.getTime();
+}
+
 async function getCats(req, res, next) {
     try {
         const {
@@ -168,6 +176,11 @@ async function createCat(req, res, next) {
             return fail(res, 'dob must be a valid date in the past', 400);
         }
 
+        // Mirrors DB CHECK constraint (dob < intake_date) for clearer API error messages.
+        if (!isDobBeforeIntake(dob, intake_date)) {
+            return fail(res, 'dob must be earlier than intake_date', 400);
+        }
+
         const [dup] = await pool.query('SELECT catid FROM Cat WHERE shelter_name = ?', [shelter_name]);
         if (dup.length) {
             return fail(res, 'shelter_name already exists', 409);
@@ -212,6 +225,12 @@ async function updateCat(req, res, next) {
 
         if (body.dob && !isValidPastDate(body.dob)) {
             return fail(res, 'dob must be a valid date in the past', 400);
+        }
+
+        const nextDob = body.dob || current.dob;
+        const nextIntakeDate = body.intake_date || current.intake_date;
+        if (!isDobBeforeIntake(nextDob, nextIntakeDate)) {
+            return fail(res, 'dob must be earlier than intake_date', 400);
         }
 
         const [dup] = await pool.query('SELECT catid FROM Cat WHERE shelter_name = ? AND catid <> ?', [shelter_name, catid]);
