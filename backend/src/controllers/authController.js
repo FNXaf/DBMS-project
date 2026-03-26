@@ -1,15 +1,21 @@
+// Authentication controller: register, login, and current user
+// This file uses SQL to lookup and create `User` records.
+// Claiming this file means you worked on user <-> DB logic.
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { ok, fail } = require('../utils/apiResponse');
 const { isEmail } = require('../utils/validators');
 
+// Create a short-lived JWT for the authenticated user.
 function signToken(user) {
     return jwt.sign({ userid: user.userid, role: user.role }, process.env.JWT_SECRET, {
         expiresIn: '7d'
     });
 }
 
+// POST /auth/register
+// Validate and insert a new user row into the DB.
 async function register(req, res, next) {
     try {
         const { full_name, email, password, phone, address } = req.body;
@@ -39,6 +45,8 @@ async function register(req, res, next) {
     }
 }
 
+// POST /auth/login
+// Verify credentials, return JWT and safe user object.
 async function login(req, res, next) {
     try {
         const { email, password } = req.body;
@@ -74,6 +82,7 @@ async function login(req, res, next) {
     }
 }
 
+// GET /auth/me — return current user from auth middleware.
 async function me(req, res) {
     return ok(res, req.user);
 }

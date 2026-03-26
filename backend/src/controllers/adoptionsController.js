@@ -1,6 +1,14 @@
+// Controller handling adoption-related actions.
+// Responsible for creating adoption requests, listing a user's
+// adoptions, listing all adoptions (admin) and updating status.
+// These functions use SQL transactions when needed to keep
+// data consistent (e.g., reserving a cat during an adoption).
 const pool = require('../config/db');
 const { ok, fail } = require('../utils/apiResponse');
 
+// Create an adoption request. Uses a DB transaction and
+// `SELECT ... FOR UPDATE` to lock the cat row while processing
+// so two people can't adopt the same cat at the same time.
 async function createAdoption(req, res, next) {
     const conn = await pool.getConnection();
     try {
@@ -63,6 +71,7 @@ async function createAdoption(req, res, next) {
     }
 }
 
+// Return adoptions belonging to the logged-in user.
 async function getMyAdoptions(req, res, next) {
     try {
         const [rows] = await pool.query(
@@ -83,6 +92,7 @@ async function getMyAdoptions(req, res, next) {
     }
 }
 
+// Admin: return all adoptions with adopter and cat info.
 async function getAllAdoptions(req, res, next) {
     try {
         const [rows] = await pool.query(
@@ -101,6 +111,8 @@ async function getAllAdoptions(req, res, next) {
     }
 }
 
+// Update adoption status (Pending, Approved, Rejected, Completed).
+// Uses a transaction and may change cat availability when rejected.
 async function updateAdoptionStatus(req, res, next) {
     const conn = await pool.getConnection();
     try {

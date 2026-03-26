@@ -1,3 +1,7 @@
+// Controller for Cat-related API endpoints.
+// This file builds SQL queries, validates input, and
+// returns API responses for listing, creating,
+// updating and deleting cats.
 const path = require('path');
 const pool = require('../config/db');
 const { ok, fail } = require('../utils/apiResponse');
@@ -16,6 +20,7 @@ const SORT_MAP = {
     status_avail: 'is_available DESC, shelter_name ASC'
 };
 
+// Convert DB row to API-friendly cat object.
 function toApiCat(cat, req) {
     const raw = cat.photo_url || '';
     const isAbsolute = /^https?:\/\//i.test(raw);
@@ -32,6 +37,7 @@ function toApiCat(cat, req) {
     };
 }
 
+// Parse a comma-separated query value into an array.
 function parseCsvList(value) {
     return String(value || '')
         .split(',')
@@ -39,6 +45,7 @@ function parseCsvList(value) {
         .filter(Boolean);
 }
 
+// Normalize boolean-like values from requests.
 function parseBooleanValue(value, fallback) {
     if (value === undefined || value === null || value === '') return fallback;
     if (typeof value === 'boolean') return value;
@@ -48,6 +55,7 @@ function parseBooleanValue(value, fallback) {
     return fallback;
 }
 
+// Check dob < intake_date to match DB CHECK constraint.
 function isDobBeforeIntake(dob, intakeDate) {
     if (!dob || !intakeDate) return false;
     const dobDate = new Date(dob);
@@ -56,6 +64,10 @@ function isDobBeforeIntake(dob, intakeDate) {
     return dobDate.getTime() < intake.getTime();
 }
 
+// GET /cats
+// Builds a SELECT query from query params (gender, breed, age, ...)
+// and returns matching cat rows. This is where server-side
+// SQL filtering happens when the client includes query params.
 async function getCats(req, res, next) {
     try {
         const {
@@ -129,6 +141,8 @@ async function getCats(req, res, next) {
     }
 }
 
+// GET /cats/:id
+// Fetch one cat by its id.
 async function getCatById(req, res, next) {
     try {
         const { catid } = req.params;
@@ -150,11 +164,15 @@ async function getCatById(req, res, next) {
     }
 }
 
+// Map frontend health labels to DB values.
 function mapHealthStatus(value) {
     if (value === 'Needs Care') return 'Under Treatment';
     return value;
 }
 
+// POST /cats
+// Validate input, enforce simple business rules, then
+// INSERT a new cat row and return the created record.
 async function createCat(req, res, next) {
     try {
         const body = req.body;
@@ -207,6 +225,9 @@ async function createCat(req, res, next) {
     }
 }
 
+// PUT /cats/:id
+// Validate updates, enforce constraints, then
+// UPDATE the Cat row and return the updated record.
 async function updateCat(req, res, next) {
     try {
         const { catid } = req.params;
@@ -285,6 +306,8 @@ async function updateCat(req, res, next) {
     }
 }
 
+// DELETE /cats/:id
+// Remove a cat record from the DB.
 async function deleteCat(req, res, next) {
     try {
         const { catid } = req.params;

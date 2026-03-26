@@ -1,3 +1,7 @@
+// Database pool and SQL logging wrapper.
+// This file creates a MySQL connection pool used by the app
+// and wraps query/execute calls so every SQL statement is
+// recorded by the SQL logger for demo / debugging purposes.
 const mysql = require('mysql2/promise');
 const { logSqlQuery } = require('../utils/sqlLogger');
 
@@ -13,6 +17,8 @@ const pool = mysql.createPool({
     namedPlaceholders: true
 });
 
+// Wraps a query runner (pool.query / connection.query / execute)
+// so the call is logged (sql, params, duration, success/error).
 function wrapQueryRunner(sourceName, originalFn) {
     return async function wrappedQuery(sql, params) {
         const start = Date.now();
@@ -41,9 +47,11 @@ function wrapQueryRunner(sourceName, originalFn) {
     };
 }
 
+// Replace pool.query with a wrapped version that logs queries.
 const originalPoolQuery = pool.query.bind(pool);
 pool.query = wrapQueryRunner('pool.query', originalPoolQuery);
 
+// Ensure connections retrieved from the pool also have logging.
 const originalGetConnection = pool.getConnection.bind(pool);
 pool.getConnection = async function wrappedGetConnection() {
     const connection = await originalGetConnection();

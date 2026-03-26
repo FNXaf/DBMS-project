@@ -1,8 +1,13 @@
+// Controller to expose internal SQL logs (admin demo).
+// These endpoints read/clear the log file produced by the
+// SQL logger that `db.js` calls for every query.
 const { ok } = require('../utils/apiResponse');
 const { readRecentSqlLogs, clearSqlLogs, LOG_FILE } = require('../utils/sqlLogger');
 
+// Parse simple query params for log filtering. Keeping this
+// here keeps the logger generic (file IO) and controller
+// responsible for shaping API-friendly filters.
 function parseLogFilters(query) {
-    // Keep filter parsing in controller so DB/logger layer stays generic.
     return {
         queryType: query.queryType || '',
         table: query.table || '',
@@ -12,6 +17,8 @@ function parseLogFilters(query) {
     };
 }
 
+// GET /logs/sql
+// Return recent SQL log entries with simple filters.
 async function getSqlLogs(req, res, next) {
     try {
         const limit = Number(req.query.limit || 200);
@@ -28,6 +35,8 @@ async function getSqlLogs(req, res, next) {
     }
 }
 
+// DELETE /logs/sql
+// Clear the SQL log file (admin action).
 async function deleteSqlLogs(req, res, next) {
     try {
         await clearSqlLogs();

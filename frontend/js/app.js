@@ -1,4 +1,4 @@
-﻿// ===== Meowtopia — Common App Logic =====
+﻿// ===== Meowtopia: Common App Logic =====
 
 // ===== Base path detection =====
 const isSubPage = window.location.pathname.includes('/pages/') || window.location.pathname.includes('\\pages\\');
@@ -83,7 +83,7 @@ function getCatImageHTML(cat) {
     `;
 }
 
-// ===== Cat Card (redesigned — shelter_name as title, clean attribute layout) =====
+// ===== Cat Card (redesigned: shelter_name as title, clean attribute layout) =====
 function createCatCard(cat, linkBase) {
     const badge = cat.is_available
         ? '<span class="cat-card-badge">Available</span>'
